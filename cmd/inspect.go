@@ -28,7 +28,7 @@ func init() {
 	rootCmd.AddCommand(inspectCmd)
 
 	inspectCmd.Flags().BoolVarP(&inspectShowDiff, "diff", "d", false, "Show the full diff")
-	
+
 	// Hidden flag to view backups for a specific user
 	inspectCmd.Flags().StringVar(&inspectUser, "user", "", "Inspect backup for a specific user (hidden)")
 	inspectCmd.Flags().MarkHidden("user")
