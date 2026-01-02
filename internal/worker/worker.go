@@ -65,11 +65,26 @@ func (w *Worker) Start() {
 
 // Stop signals the worker to stop
 func (w *Worker) Stop() {
-	close(w.stopCh)
+	select {
+	case <-w.stopCh:
+		// Already stopped
+		return
+	default:
+		close(w.stopCh)
+	}
+
 	if w.ticker != nil {
 		w.ticker.Stop()
 	}
-	<-w.stoppedCh
+
+	// Only wait for stoppedCh if the worker was actually started
+	// Use a timeout to prevent hanging on workers that were never started
+	select {
+	case <-w.stoppedCh:
+		// Worker stopped normally
+	case <-time.After(100 * time.Millisecond):
+		// Worker was never started, or already stopped
+	}
 }
 
 // updateTicker updates the ticker with a new interval
