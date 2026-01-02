@@ -1,15 +1,10 @@
-name: "🔍 CI"
+name: "🚀 Build"
 
 on:
   release:
     types: [ published ]
   workflow_dispatch:
     inputs:
-      push:
-        description: "Push to DockerHub"
-        required: false
-        type: boolean
-        default: true
       run-tests:
         description: "Run tests before building"
         required: false
