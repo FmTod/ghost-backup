@@ -153,20 +153,10 @@ func (g *GitRepo) PushToBackupRef(hash, userIdentifier, branch, remote string) e
 	return nil
 }
 
-// ListBackupRefs lists all backup references for the current user and branch
-func (g *GitRepo) ListBackupRefs(remote, userIdentifier, branch string) ([]BackupRef, error) {
-	refPattern := fmt.Sprintf("refs/backups/%s/%s", SanitizeRefName(userIdentifier), SanitizeRefName(branch))
-
-	// Fetch refs from remote
-	cmd := exec.Command("git", "ls-remote", remote, refPattern)
-	cmd.Dir = g.Path
-	output, err := cmd.Output()
-	if err != nil {
-		return nil, fmt.Errorf("failed to list backup refs: %w", err)
-	}
-
+// parseBackupRefs parses git ls-remote output into BackupRef structs
+func parseBackupRefs(output string) []BackupRef {
 	var refs []BackupRef
-	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	lines := strings.Split(strings.TrimSpace(output), "\n")
 	for _, line := range lines {
 		if line == "" {
 			continue
@@ -179,8 +169,22 @@ func (g *GitRepo) ListBackupRefs(remote, userIdentifier, branch string) ([]Backu
 			})
 		}
 	}
+	return refs
+}
 
-	return refs, nil
+// ListBackupRefs lists all backup references for the current user and branch
+func (g *GitRepo) ListBackupRefs(remote, userIdentifier, branch string) ([]BackupRef, error) {
+	refPattern := fmt.Sprintf("refs/backups/%s/%s", SanitizeRefName(userIdentifier), SanitizeRefName(branch))
+
+	// Fetch refs from remote
+	cmd := exec.Command("git", "ls-remote", remote, refPattern)
+	cmd.Dir = g.Path
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list backup refs: %w", err)
+	}
+
+	return parseBackupRefs(string(output)), nil
 }
 
 // ListAllBackupUsers lists all users who have backups in the remote repository
@@ -236,22 +240,7 @@ func (g *GitRepo) ListAllBackupRefsForUser(remote, userIdentifier string) ([]Bac
 		return nil, fmt.Errorf("failed to list backup refs for user: %w", err)
 	}
 
-	var refs []BackupRef
-	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-	for _, line := range lines {
-		if line == "" {
-			continue
-		}
-		parts := strings.Fields(line)
-		if len(parts) >= 2 {
-			refs = append(refs, BackupRef{
-				Hash: parts[0],
-				Ref:  parts[1],
-			})
-		}
-	}
-
-	return refs, nil
+	return parseBackupRefs(string(output)), nil
 }
 
 // FetchBackupRef fetches a specific backup reference

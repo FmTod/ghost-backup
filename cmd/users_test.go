@@ -33,7 +33,6 @@ func TestUsersCmd_Configuration(t *testing.T) {
 func TestUsersCmd_NoFlags(t *testing.T) {
 	// users command should have no flags
 	if usersCmd.Flags().HasFlags() {
-		flags := usersCmd.Flags()
-		t.Logf("users command has unexpected flags: %v", flags)
+		t.Errorf("users command should not have flags, but has: %v", usersCmd.Flags())
 	}
 }
