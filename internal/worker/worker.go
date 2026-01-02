@@ -20,7 +20,7 @@ type Worker struct {
 	logger      *log.Logger
 	lastModTime time.Time
 	ticker      *time.Ticker
-	mu          sync.Mutex
+	mu          sync.RWMutex
 }
 
 // NewWorker creates a new worker for a repository
@@ -52,11 +52,16 @@ func (w *Worker) Start() {
 	w.updateTicker(time.Duration(cfg.Interval) * time.Second)
 
 	for {
+		// Get ticker channel under mutex protection
+		w.mu.RLock()
+		tickerCh := w.ticker.C
+		w.mu.RUnlock()
+
 		select {
 		case <-w.stopCh:
 			w.logger.Printf("[%s] Worker stopped\n", w.repoPath)
 			return
-		case <-w.ticker.C:
+		case <-tickerCh:
 			w.performBackup()
 			w.checkConfigReload()
 		}
@@ -73,9 +78,11 @@ func (w *Worker) Stop() {
 		close(w.stopCh)
 	}
 
+	w.mu.Lock()
 	if w.ticker != nil {
 		w.ticker.Stop()
 	}
+	w.mu.Unlock()
 
 	// Only wait for stoppedCh if the worker was actually started
 	// Use a timeout to prevent hanging on workers that were never started
@@ -107,8 +114,15 @@ func (w *Worker) checkConfigReload() {
 		return
 	}
 
-	if info.ModTime().After(w.lastModTime) {
+	w.mu.RLock()
+	lastMod := w.lastModTime
+	w.mu.RUnlock()
+
+	if info.ModTime().After(lastMod) {
+		w.mu.Lock()
 		w.lastModTime = info.ModTime()
+		w.mu.Unlock()
+
 		cfg, err := w.loadConfig()
 		if err != nil {
 			w.logger.Printf("[%s] Failed to reload config: %v\n", w.repoPath, err)
@@ -131,7 +145,9 @@ func (w *Worker) loadConfig() (*config.LocalConfig, error) {
 	// Update last mod time
 	configPath := config.GetLocalConfigPath(w.repoPath)
 	if info, err := os.Stat(configPath); err == nil {
+		w.mu.Lock()
 		w.lastModTime = info.ModTime()
+		w.mu.Unlock()
 	}
 
 	return cfg, nil
