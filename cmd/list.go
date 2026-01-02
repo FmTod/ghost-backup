@@ -46,9 +46,9 @@ func runList(*cobra.Command, []string) error {
 
 	var userIdentifier string
 
-	// If --user flag is provided, use it directly
+	// If --user flag is provided, use it directly (sanitized for ref safety)
 	if listUser != "" {
-		userIdentifier = listUser
+		userIdentifier = git.SanitizeRefName(listUser)
 	} else {
 		// Get user email
 		userEmail, err := repo.GetUserEmail()

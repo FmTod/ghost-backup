@@ -199,7 +199,7 @@ func (g *GitRepo) ListAllBackupUsers(remote string) ([]string, error) {
 	}
 
 	// Parse output and extract unique user identifiers
-	userSet := make(map[string]bool)
+	userSet := make(map[string]struct{})
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
 	for _, line := range lines {
 		if line == "" {
@@ -214,7 +214,7 @@ func (g *GitRepo) ListAllBackupUsers(remote string) ([]string, error) {
 				refParts := strings.Split(ref, "/")
 				if len(refParts) >= 3 {
 					userIdentifier := refParts[2]
-					userSet[userIdentifier] = true
+					userSet[userIdentifier] = struct{}{}
 				}
 			}
 		}
