@@ -35,11 +35,13 @@ in
         Restart = "on-failure";
         RestartSec = "10s";
 
+        # State directory for logs (under ~/.local/state/ghost-backup)
+        StateDirectory = "ghost-backup";
+
         # Security hardening
         NoNewPrivileges = true;
         PrivateTmp = true;
         ProtectSystem = "strict";
-        ProtectHome = "read-only";
       };
     };
   };

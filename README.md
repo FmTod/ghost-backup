@@ -422,6 +422,32 @@ ghost-backup service install
 ghost-backup service start
 ```
 
+### Read-Only File System Error (NixOS)
+
+**Problem**: Service fails with error: `failed to open log file: read-only file system`
+
+**Cause**: This occurs when using the NixOS module with systemd hardening settings that restrict write access.
+
+**Solution**: 
+
+1. Ensure you're using the latest version of the ghost-backup flake/module
+2. Rebuild your NixOS configuration:
+   ```bash
+   sudo nixos-rebuild switch
+   ```
+
+3. Restart the user service:
+   ```bash
+   systemctl --user restart ghost-backup
+   ```
+
+**Alternative**: If you're not using the NixOS module and installed manually, ensure the config directory is writable:
+
+```bash
+mkdir -p ~/.config/ghost-backup
+chmod 755 ~/.config/ghost-backup
+```
+
 ### Gitleaks Timeout
 
 **Problem**: Gitleaks scan times out on large diffs.
