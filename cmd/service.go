@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/FmTod/ghost-backup/internal/config"
+	svc "github.com/FmTod/ghost-backup/internal/service"
 	"github.com/kardianos/service"
-	"github.com/neoscode/ghost-backup/internal/config"
-	svc "github.com/neoscode/ghost-backup/internal/service"
 	"github.com/spf13/cobra"
 )
 

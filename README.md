@@ -25,13 +25,13 @@ A production-ready, multi-platform CLI tool that provides automated git backup f
 #### Run without installing
 
 ```bash
-nix run github:neoscode/ghost-backup -- --help
+nix run github:FmTod/ghost-backup -- --help
 ```
 
 #### Install to your profile
 
 ```bash
-nix profile install github:neoscode/ghost-backup
+nix profile install github:FmTod/ghost-backup
 ```
 
 #### NixOS Module
@@ -42,7 +42,7 @@ Add to your NixOS configuration:
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    ghost-backup.url = "github:neoscode/ghost-backup";
+    ghost-backup.url = "github:FmTod/ghost-backup";
   };
 
   outputs = { nixpkgs, ghost-backup, ... }: {
@@ -77,7 +77,7 @@ systemctl --user restart ghost-backup
 Enter a development environment with all dependencies:
 
 ```bash
-nix develop github:neoscode/ghost-backup
+nix develop github:FmTod/ghost-backup
 ```
 
 Or locally:
@@ -92,7 +92,7 @@ nix develop
 Install the latest release with a single command:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/neoscode/ghost-backup/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/FmTod/ghost-backup/main/install.sh | bash
 ```
 
 This script will:
@@ -104,44 +104,44 @@ This script will:
 To install to a custom location:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/neoscode/ghost-backup/main/install.sh | bash -s -- --prefix ~/.local
+curl -fsSL https://raw.githubusercontent.com/FmTod/ghost-backup/main/install.sh | bash -s -- --prefix ~/.local
 ```
 
 #### Manual Installation
 
-1. Download the latest release for your platform from the [releases page](https://github.com/neoscode/ghost-backup/releases/latest):
+1. Download the latest release for your platform from the [releases page](https://github.com/FmTod/ghost-backup/releases/latest):
 
    **Linux (amd64)**:
    ```bash
-   curl -L -o ghost-backup https://github.com/neoscode/ghost-backup/releases/latest/download/ghost-backup-linux-amd64
+   curl -L -o ghost-backup https://github.com/FmTod/ghost-backup/releases/latest/download/ghost-backup-linux-amd64
    chmod +x ghost-backup
    sudo mv ghost-backup /usr/local/bin/
    ```
 
    **Linux (arm64)**:
    ```bash
-   curl -L -o ghost-backup https://github.com/neoscode/ghost-backup/releases/latest/download/ghost-backup-linux-arm64
+   curl -L -o ghost-backup https://github.com/FmTod/ghost-backup/releases/latest/download/ghost-backup-linux-arm64
    chmod +x ghost-backup
    sudo mv ghost-backup /usr/local/bin/
    ```
 
    **macOS (Intel)**:
    ```bash
-   curl -L -o ghost-backup https://github.com/neoscode/ghost-backup/releases/latest/download/ghost-backup-darwin-amd64
+   curl -L -o ghost-backup https://github.com/FmTod/ghost-backup/releases/latest/download/ghost-backup-darwin-amd64
    chmod +x ghost-backup
    sudo mv ghost-backup /usr/local/bin/
    ```
 
    **macOS (Apple Silicon)**:
    ```bash
-   curl -L -o ghost-backup https://github.com/neoscode/ghost-backup/releases/latest/download/ghost-backup-darwin-arm64
+   curl -L -o ghost-backup https://github.com/FmTod/ghost-backup/releases/latest/download/ghost-backup-darwin-arm64
    chmod +x ghost-backup
    sudo mv ghost-backup /usr/local/bin/
    ```
 
    **Windows**:
    
-   Download [ghost-backup-windows-amd64.exe](https://github.com/neoscode/ghost-backup/releases/latest/download/ghost-backup-windows-amd64.exe) and add it to your PATH.
+   Download [ghost-backup-windows-amd64.exe](https://github.com/FmTod/ghost-backup/releases/latest/download/ghost-backup-windows-amd64.exe) and add it to your PATH.
 
 2. Verify the installation:
 
@@ -152,7 +152,7 @@ curl -fsSL https://raw.githubusercontent.com/neoscode/ghost-backup/main/install.
 ### Building from Source
 
 ```bash
-git clone https://github.com/neoscode/ghost-backup.git
+git clone https://github.com/FmTod/ghost-backup.git
 cd ghost-backup
 go build -o ghost-backup
 sudo mv ghost-backup /usr/local/bin/

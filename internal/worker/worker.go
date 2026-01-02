@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/neoscode/ghost-backup/internal/config"
-	"github.com/neoscode/ghost-backup/internal/git"
-	"github.com/neoscode/ghost-backup/internal/security"
+	"github.com/FmTod/ghost-backup/internal/config"
+	"github.com/FmTod/ghost-backup/internal/git"
+	"github.com/FmTod/ghost-backup/internal/security"
 )
 
 // Worker manages backup operations for a single repository

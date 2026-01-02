@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/neoscode/ghost-backup/internal/config"
+	"github.com/FmTod/ghost-backup/internal/config"
 )
 
 func TestNewWorker(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/neoscode/ghost-backup/internal/config"
+	"github.com/FmTod/ghost-backup/internal/config"
 )
 
 func TestCheckCmd_Configuration(t *testing.T) {

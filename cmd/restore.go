@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/neoscode/ghost-backup/internal/git"
+	"github.com/FmTod/ghost-backup/internal/git"
 	"github.com/spf13/cobra"
 )
 

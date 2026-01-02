@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/neoscode/ghost-backup/internal/config"
-	"github.com/neoscode/ghost-backup/internal/git"
-	"github.com/neoscode/ghost-backup/internal/security"
+	"github.com/FmTod/ghost-backup/internal/config"
+	"github.com/FmTod/ghost-backup/internal/git"
+	"github.com/FmTod/ghost-backup/internal/security"
 	"github.com/spf13/cobra"
 )
 

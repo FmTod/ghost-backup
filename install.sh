@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Ghost Backup Installation Script
-# Usage: curl -fsSL https://raw.githubusercontent.com/neoscode/ghost-backup/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/FmTod/ghost-backup/main/install.sh | bash
 
 set -e
 

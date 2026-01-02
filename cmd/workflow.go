@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/neoscode/ghost-backup/internal/git"
+	"github.com/FmTod/ghost-backup/internal/git"
 	"github.com/spf13/cobra"
 )
 

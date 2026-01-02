@@ -1,4 +1,4 @@
-module github.com/neoscode/ghost-backup
+module github.com/FmTod/ghost-backup
 
 go 1.21
 

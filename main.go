@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/neoscode/ghost-backup/cmd"
+	"github.com/FmTod/ghost-backup/cmd"
 )
 
 func main() {

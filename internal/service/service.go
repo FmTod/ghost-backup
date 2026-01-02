@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/FmTod/ghost-backup/internal/config"
+	"github.com/FmTod/ghost-backup/internal/worker"
 	"github.com/kardianos/service"
-	"github.com/neoscode/ghost-backup/internal/config"
-	"github.com/neoscode/ghost-backup/internal/worker"
 )
 
 // Program implements the service.Interface
