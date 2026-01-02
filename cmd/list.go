@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/FmTod/ghost-backup/internal/config"
 	"github.com/FmTod/ghost-backup/internal/git"
 	"github.com/spf13/cobra"
 )
@@ -41,6 +42,19 @@ func runList(*cobra.Command, []string) error {
 		return fmt.Errorf("failed to get user email: %w", err)
 	}
 
+	// Get user name for identifier generation
+	userName, _ := repo.GetUserName()
+
+	// Load global config to get git_user if configured
+	globalConfig, err := config.LoadGlobalConfig()
+	if err != nil {
+		// Non-fatal, use empty config
+		globalConfig = &config.GlobalConfig{}
+	}
+
+	// Generate user identifier
+	userIdentifier := git.GenerateUserIdentifier(globalConfig.GitUser, userName, userEmail)
+
 	// Get current branch
 	branch, err := repo.GetCurrentBranch()
 	if err != nil {
@@ -53,10 +67,10 @@ func runList(*cobra.Command, []string) error {
 		return fmt.Errorf("failed to get remote: %w", err)
 	}
 
-	fmt.Printf("Fetching backups for %s on branch %s...\n\n", userEmail, branch)
+	fmt.Printf("Fetching backups for %s on branch %s...\n\n", userIdentifier, branch)
 
 	// List backup refs
-	refs, err := repo.ListBackupRefs(remote, userEmail, branch)
+	refs, err := repo.ListBackupRefs(remote, userIdentifier, branch)
 	if err != nil {
 		return fmt.Errorf("failed to list backups: %w", err)
 	}

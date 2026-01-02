@@ -14,6 +14,12 @@ type Registry struct {
 	mu           sync.RWMutex
 }
 
+// GlobalConfig holds global configuration settings
+type GlobalConfig struct {
+	GitUser  string `json:"git_user,omitempty"`  // Git username for authentication
+	GitToken string `json:"git_token,omitempty"` // Git personal access token for authentication
+}
+
 // LocalConfig represents the per-repository configuration
 type LocalConfig struct {
 	Interval    int  `json:"interval"`     // Backup interval in seconds
@@ -41,6 +47,76 @@ func GetRegistryPath() (string, error) {
 		return "", err
 	}
 	return filepath.Join(configDir, "registry.json"), nil
+}
+
+// GetGlobalConfigPath returns the path to the global config file
+func GetGlobalConfigPath() (string, error) {
+	configDir, err := GetConfigDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(configDir, "config.json"), nil
+}
+
+// LoadGlobalConfig loads the global configuration from disk
+func LoadGlobalConfig() (*GlobalConfig, error) {
+	configPath, err := GetGlobalConfigPath()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create config directory if it doesn't exist
+	if err := os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
+		return nil, fmt.Errorf("failed to create config directory: %w", err)
+	}
+
+	// Default config
+	config := &GlobalConfig{}
+
+	// If config file doesn't exist, return default
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		return config, nil
+	}
+
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read global config: %w", err)
+	}
+
+	if len(data) == 0 {
+		return config, nil
+	}
+
+	if err := json.Unmarshal(data, config); err != nil {
+		return nil, fmt.Errorf("failed to parse global config: %w", err)
+	}
+
+	return config, nil
+}
+
+// SaveGlobalConfig saves the global configuration to disk
+func SaveGlobalConfig(config *GlobalConfig) error {
+	configPath, err := GetGlobalConfigPath()
+	if err != nil {
+		return err
+	}
+
+	// Ensure directory exists
+	if err := os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
+		return fmt.Errorf("failed to create config directory: %w", err)
+	}
+
+	data, err := json.MarshalIndent(config, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal global config: %w", err)
+	}
+
+	// Use 0600 permissions for config file containing token
+	if err := os.WriteFile(configPath, data, 0600); err != nil {
+		return fmt.Errorf("failed to write global config: %w", err)
+	}
+
+	return nil
 }
 
 // LoadRegistry loads the global registry from disk

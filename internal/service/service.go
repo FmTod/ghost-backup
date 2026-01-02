@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/FmTod/ghost-backup/internal/config"
+	"github.com/FmTod/ghost-backup/internal/git"
 	"github.com/FmTod/ghost-backup/internal/worker"
 	"github.com/kardianos/service"
 )
@@ -21,6 +22,18 @@ type Program struct {
 // Start is called when the service starts
 func (p *Program) Start(service.Service) error {
 	_ = p.logger.Info("Starting ghost-backup service...")
+
+	// Load global config for Git credentials
+	globalConfig, err := config.LoadGlobalConfig()
+	if err != nil {
+		return fmt.Errorf("failed to load global config: %w", err)
+	}
+
+	// Setup Git credentials if token is configured
+	if globalConfig.GitToken != "" {
+		git.SetupGitCredentials(globalConfig.GitUser, globalConfig.GitToken)
+		_ = p.logger.Info("Git credentials configured from global config")
+	}
 
 	// Setup file logging
 	logPath, err := getLogFilePath()
@@ -88,11 +101,18 @@ func (p *Program) Stop(service.Service) error {
 
 // getLogFilePath returns the path to the log file
 func getLogFilePath() (string, error) {
-	configDir, err := config.GetConfigDir()
-	if err != nil {
-		return "", err
+	// If running as a systemd service with StateDirectory, use that
+	if stateDir := os.Getenv("STATE_DIRECTORY"); stateDir != "" {
+		return filepath.Join(stateDir, "ghost-backup.log"), nil
 	}
-	return filepath.Join(configDir, "ghost-backup.log"), nil
+
+	// Otherwise use XDG state directory (~/.local/state/ghost-backup)
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get home directory: %w", err)
+	}
+	stateDir := filepath.Join(homeDir, ".local", "state", "ghost-backup")
+	return filepath.Join(stateDir, "ghost-backup.log"), nil
 }
 
 // GetLogFilePath returns the path to the log file (exported for CLI)

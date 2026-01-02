@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/FmTod/ghost-backup/internal/config"
 	"github.com/FmTod/ghost-backup/internal/git"
@@ -79,6 +82,33 @@ func runInit(*cobra.Command, []string) error {
 	}
 
 	fmt.Printf("✓ Added repository to global registry\n")
+
+	// Check and prompt for credentials before starting service
+	if !config.CheckCredentialsConfigured() {
+		fmt.Println("\n" + strings.Repeat("─", 60))
+		fmt.Println("⚠ Git credentials not configured")
+		fmt.Println(strings.Repeat("─", 60))
+		fmt.Println("For the service to work properly, you should configure:")
+		fmt.Println("  • Username - Identifies your backups in the team")
+		fmt.Println("  • Token - Required for non-interactive git push")
+		fmt.Print("\nWould you like to configure them now? (Y/n): ")
+
+		reader := bufio.NewReader(os.Stdin)
+		response, _ := reader.ReadString('\n')
+		response = strings.ToLower(strings.TrimSpace(response))
+
+		if response == "" || response == "y" || response == "yes" {
+			if _, err := config.PromptForMissingCredentials(); err != nil {
+				fmt.Printf("Warning: Failed to configure credentials: %v\n", err)
+				fmt.Println("You can configure them later with:")
+				fmt.Println("  ghost-backup config set-token --username <user> --token <token>")
+			}
+		} else {
+			fmt.Println("\nSkipped. You can configure credentials later with:")
+			fmt.Println("  ghost-backup config set-token --username <user> --token <token>")
+		}
+		fmt.Println()
+	}
 
 	// Ensure service is running
 	fmt.Printf("Ensuring service is installed and running...\n")

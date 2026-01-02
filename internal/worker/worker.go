@@ -212,6 +212,19 @@ func (w *Worker) performBackup() {
 		return
 	}
 
+	// Get user name for identifier generation
+	userName, _ := repo.GetUserName()
+
+	// Load global config to get git_user if configured
+	globalConfig, err := config.LoadGlobalConfig()
+	if err != nil {
+		w.logger.Printf("[%s] Warning: Failed to load global config: %v\n", w.repoPath, err)
+		globalConfig = &config.GlobalConfig{} // Use empty config
+	}
+
+	// Generate user identifier
+	userIdentifier := git.GenerateUserIdentifier(globalConfig.GitUser, userName, userEmail)
+
 	branch, err := repo.GetCurrentBranch()
 	if err != nil {
 		w.logger.Printf("[%s] Failed to get current branch: %v\n", w.repoPath, err)
@@ -226,14 +239,14 @@ func (w *Worker) performBackup() {
 	}
 
 	// Push to back up ref
-	err = repo.PushToBackupRef(hash, userEmail, branch, remote)
+	err = repo.PushToBackupRef(hash, userIdentifier, branch, remote)
 	if err != nil {
 		w.logger.Printf("[%s] Failed to push backup: %v\n", w.repoPath, err)
 		return
 	}
 
 	w.logger.Printf("[%s] Backup completed successfully: refs/backups/%s/%s\n",
-		w.repoPath, userEmail, branch)
+		w.repoPath, userIdentifier, branch)
 }
 
 // Manager manages multiple workers

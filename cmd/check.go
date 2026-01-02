@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -47,6 +48,27 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("Checking ghost-backup configuration for: %s\n\n", absPath)
+
+	// Check and prompt for credentials if not configured (skip in test mode)
+	if !checkSkipService && !config.CheckCredentialsConfigured() {
+		fmt.Println("[!] Git credentials not configured")
+		fmt.Println("    Credentials are needed for the service to push backups automatically.")
+		fmt.Print("\nWould you like to configure them now? (y/N): ")
+
+		reader := bufio.NewReader(os.Stdin)
+		response, _ := reader.ReadString('\n')
+		response = strings.ToLower(strings.TrimSpace(response))
+
+		if response == "y" || response == "yes" {
+			if _, err := config.PromptForMissingCredentials(); err != nil {
+				fmt.Printf("Warning: Failed to configure credentials: %v\n", err)
+			}
+		} else {
+			fmt.Println("Skipped. You can configure credentials later with:")
+			fmt.Println("  ghost-backup config set-token --username <user> --token <token>")
+			fmt.Println()
+		}
+	}
 
 	hasErrors := false
 	warnings := []string{}
@@ -130,6 +152,12 @@ func runCheck(cmd *cobra.Command, args []string) error {
 			fmt.Printf("   [PASS] User email: %s\n", userEmail)
 		}
 
+		// Check user name
+		userName, _ := repo.GetUserName()
+		if userName != "" {
+			fmt.Printf("   [PASS] User name: %s\n", userName)
+		}
+
 		// Check remote
 		remote, err := repo.GetRemote()
 		if err != nil {
@@ -147,6 +175,31 @@ func runCheck(cmd *cobra.Command, args []string) error {
 			warnings = append(warnings, "Could not determine current branch")
 		} else {
 			fmt.Printf("   [PASS] Current branch: %s\n", branch)
+		}
+
+		// Check user identifier
+		fmt.Printf("\n[*] Checking user identifier for backups...\n")
+		globalConfig, err := config.LoadGlobalConfig()
+		if err != nil {
+			fmt.Printf("   [WARN] Failed to load global config: %v\n", err)
+			globalConfig = &config.GlobalConfig{} // Use empty config
+		}
+
+		userIdentifier := git.GenerateUserIdentifier(globalConfig.GitUser, userName, userEmail)
+		fmt.Printf("   [INFO] Backup identifier: %s\n", userIdentifier)
+
+		if globalConfig.GitUser != "" {
+			fmt.Printf("     Source: global config (git_user)\n")
+		} else if userName != "" {
+			fmt.Printf("     Source: git username (sanitized from: %s)\n", userName)
+		} else {
+			fmt.Printf("     Source: sanitized email\n")
+			fmt.Printf("   [TIP] Set a custom identifier for better team visibility:\n")
+			fmt.Printf("         ghost-backup config set-token --username yourname\n")
+		}
+
+		if branch != "" {
+			fmt.Printf("   [INFO] Backup ref: refs/backups/%s/%s\n", userIdentifier, branch)
 		}
 	}
 
@@ -179,9 +232,9 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	}
 
 	// Summary
-	fmt.Printf("\n" + strings.Repeat("═", 50) + "\n")
+	fmt.Printf("\n%s\n", strings.Repeat("═", 50))
 	fmt.Printf("SUMMARY\n")
-	fmt.Printf(strings.Repeat("═", 50) + "\n")
+	fmt.Printf("%s\n", strings.Repeat("═", 50))
 
 	if hasErrors {
 		fmt.Printf("[FAIL] Configuration has ERRORS that need to be fixed\n")

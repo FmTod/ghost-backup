@@ -105,6 +105,19 @@ func runBackup(*cobra.Command, []string) error {
 		return fmt.Errorf("failed to get user email: %w", err)
 	}
 
+	// Get user name for identifier generation
+	userName, _ := repo.GetUserName()
+
+	// Load global config to get git_user if configured
+	globalConfig, err := config.LoadGlobalConfig()
+	if err != nil {
+		// Non-fatal, use empty config
+		globalConfig = &config.GlobalConfig{}
+	}
+
+	// Generate user identifier
+	userIdentifier := git.GenerateUserIdentifier(globalConfig.GitUser, userName, userEmail)
+
 	branch, err := repo.GetCurrentBranch()
 	if err != nil {
 		return fmt.Errorf("failed to get current branch: %w", err)
@@ -118,14 +131,14 @@ func runBackup(*cobra.Command, []string) error {
 
 	// Push to backup ref
 	fmt.Println("Pushing backup to remote...")
-	err = repo.PushToBackupRef(hash, userEmail, branch, remote)
+	err = repo.PushToBackupRef(hash, userIdentifier, branch, remote)
 	if err != nil {
 		return fmt.Errorf("failed to push backup: %w", err)
 	}
 
 	fmt.Printf("✓ Backup completed successfully!\n")
 	fmt.Printf("  Hash: %s\n", hash)
-	fmt.Printf("  Ref: refs/backups/%s/%s\n", userEmail, branch)
+	fmt.Printf("  Ref: refs/backups/%s/%s\n", userIdentifier, branch)
 
 	// Show how to restore
 	fmt.Printf("\nTo restore this backup:\n")

@@ -271,6 +271,51 @@ The command provides detailed diagnostics and suggestions for fixing any issues.
 
 ## Configuration
 
+### Global Configuration
+
+The global configuration is stored at `~/.config/ghost-backup/config.json` and contains settings that apply to all repositories.
+
+```json
+{
+  "git_user": "myusername",
+  "git_token": "ghp_xxxxxxxxxxxx"
+}
+```
+
+#### Git Authentication Token
+
+For non-interactive authentication (required when running as a service), you can configure a Git username and personal access token:
+
+```bash
+# Set credentials interactively (secure, hidden input)
+ghost-backup config set-token
+
+# Set credentials with username and token
+ghost-backup config set-token --username myuser --token ghp_xxxxxxxxxxxx
+
+# Set only token (username will default to token for auth)
+ghost-backup config set-token --token ghp_xxxxxxxxxxxx
+
+# View configured credentials (token masked)
+ghost-backup config get-token
+
+# Clear credentials
+ghost-backup config clear-token
+```
+
+**Creating a GitHub Personal Access Token:**
+1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. Click "Generate new token (classic)"
+3. Give it a descriptive name (e.g., "ghost-backup")
+4. Select scopes: `repo` (Full control of private repositories)
+5. Generate and copy the token
+6. Run `ghost-backup config set-token` and paste the token (username is optional)
+
+**Note:** After setting credentials, restart the service:
+```bash
+ghost-backup service restart
+```
+
 ### Global Registry
 
 The global registry is stored at `~/.config/ghost-backup/registry.json` and contains the list of all monitored repositories.
@@ -335,12 +380,27 @@ ghost-backup service run
 
 ## Viewing Logs
 
-Logs are stored at `~/.config/ghost-backup/ghost-backup.log`.
+### Log Location
 
-To view logs in real-time:
+Logs are stored at `~/.local/state/ghost-backup/ghost-backup.log` (following XDG Base Directory specification).
 
+**For systemd services (NixOS module)**:
+- View with: `journalctl --user -u ghost-backup -f` (recommended)
+- Or: `tail -f ~/.local/state/ghost-backup/ghost-backup.log`
+
+**For manual installations**:
+- View with: `tail -f ~/.local/state/ghost-backup/ghost-backup.log`
+
+### Viewing Logs in Real-Time
+
+For systemd services (NixOS module):
 ```bash
-tail -f ~/.config/ghost-backup/ghost-backup.log
+journalctl --user -u ghost-backup -f
+```
+
+For manual installations:
+```bash
+tail -f ~/.local/state/ghost-backup/ghost-backup.log
 ```
 
 ## How It Works
@@ -350,7 +410,32 @@ tail -f ~/.config/ghost-backup/ghost-backup.log
 1. **Change Detection**: The worker checks if there are uncommitted changes in the repository
 2. **Snapshot Creation**: Creates a git stash without modifying the working directory
 3. **Secret Scanning** (if enabled): Scans the diff for secrets using gitleaks with a 60-second timeout
-4. **Push to Remote**: Pushes the snapshot to `refs/backups/<user_email>/<branch_name>`
+4. **Push to Remote**: Pushes the snapshot to `refs/backups/<user_identifier>/<branch_name>`
+
+### User Identifier System
+
+Ghost Backup uses a flexible user identifier system to organize backups in a way that balances privacy with team visibility.
+
+**Priority order for user identifiers:**
+1. **`git_user` from global config** - User-configured identifier (recommended for teams)
+2. **Git username** - From `git config user.name`, sanitized for ref compatibility
+3. **Sanitized email** - Last resort fallback
+
+**Why this matters:**
+- **Team leads can identify backups**: No hashed identifiers - clear usernames like "johndoe"
+- **Privacy by default**: Emails are sanitized (e.g., `john_at_example.com`)
+- **User control**: Team members can set their own identifier
+
+**Setting your identifier:**
+```bash
+# Recommended: Set a custom identifier
+ghost-backup config set-token --username johndoe --token ghp_xxxx
+
+# Check what identifier will be used
+ghost-backup check
+```
+
+This ensures consistent, identifiable backup refs like `refs/backups/johndoe/main` that team leads can easily recognize.
 
 ### Architecture
 
@@ -448,6 +533,34 @@ mkdir -p ~/.config/ghost-backup
 chmod 755 ~/.config/ghost-backup
 ```
 
+### Git Authentication Failures
+
+**Problem**: Service fails to push backups with authentication errors like:
+- "fatal: could not read Username"
+- "fatal: could not read Password"
+- "Authentication failed"
+
+**Cause**: Git is trying to prompt for credentials in non-interactive mode (service cannot prompt).
+
+**Solution**: Configure Git credentials (username and token):
+
+1. Create a GitHub personal access token (see Configuration section above)
+2. Set the credentials:
+   ```bash
+   ghost-backup config set-token --username myuser --token ghp_xxxx
+   # Or interactively:
+   ghost-backup config set-token
+   ```
+3. Restart the service:
+   ```bash
+   ghost-backup service restart
+   ```
+
+**Verify credentials are configured:**
+```bash
+ghost-backup config get-token
+```
+
 ### Gitleaks Timeout
 
 **Problem**: Gitleaks scan times out on large diffs.
@@ -468,7 +581,7 @@ chmod 755 ~/.config/ghost-backup
 
 **Solution**: 
 1. Check service status: `ghost-backup service status`
-2. View logs: `tail -f ~/.config/ghost-backup/ghost-backup.log`
+2. View logs: `tail -f ~/.local/state/ghost-backup/ghost-backup.log`
 3. Verify repository is in registry: `cat ~/.config/ghost-backup/registry.json`
 4. Ensure remote is configured: `git remote -v`
 

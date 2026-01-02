@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/FmTod/ghost-backup/internal/config"
 	"github.com/FmTod/ghost-backup/internal/git"
 	"github.com/spf13/cobra"
 )
@@ -56,6 +57,19 @@ func runRestore(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get user email: %w", err)
 	}
 
+	// Get user name for identifier generation
+	userName, _ := repo.GetUserName()
+
+	// Load global config to get git_user if configured
+	globalConfig, err := config.LoadGlobalConfig()
+	if err != nil {
+		// Non-fatal, use empty config
+		globalConfig = &config.GlobalConfig{}
+	}
+
+	// Generate user identifier
+	userIdentifier := git.GenerateUserIdentifier(globalConfig.GitUser, userName, userEmail)
+
 	branch, err := repo.GetCurrentBranch()
 	if err != nil {
 		return fmt.Errorf("failed to get current branch: %w", err)
@@ -67,14 +81,14 @@ func runRestore(_ *cobra.Command, args []string) error {
 	}
 
 	// Fetch the backup ref to ensure we have the object
-	refName := fmt.Sprintf("refs/backups/%s/%s", git.SanitizeRefName(userEmail), git.SanitizeRefName(branch))
+	refName := fmt.Sprintf("refs/backups/%s/%s", git.SanitizeRefName(userIdentifier), git.SanitizeRefName(branch))
 	fmt.Printf("Fetching backup from %s...\n", refName)
 
 	if err := repo.FetchBackupRef(remote, refName); err != nil {
 		return fmt.Errorf("failed to fetch backup ref: %w", err)
 	}
 
-	// Restore based on a method
+	// Restore based on method
 	switch restoreMethod {
 	case "apply":
 		fmt.Printf("Applying stash...\n")

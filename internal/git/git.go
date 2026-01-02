@@ -3,6 +3,7 @@ package git
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -17,6 +18,38 @@ type GitRepo struct {
 // NewGitRepo creates a new GitRepo instance
 func NewGitRepo(path string) *GitRepo {
 	return &GitRepo{Path: path}
+}
+
+// SetupGitCredentials configures git to use the provided credentials for authentication
+// This sets up environment variables for non-interactive authentication
+func SetupGitCredentials(username, token string) {
+	if token == "" {
+		return
+	}
+
+	// Use provided username or fall back to token for both username and password
+	if username == "" {
+		username = token
+	}
+
+	// Set GIT_ASKPASS to echo the token
+	// This allows git to use the credentials for HTTPS authentication without prompting
+	os.Setenv("GIT_ASKPASS", "echo")
+	os.Setenv("GIT_USERNAME", username)
+	os.Setenv("GIT_PASSWORD", token)
+}
+
+// execGitCommand executes a git command with proper credential handling
+func (g *GitRepo) execGitCommand(args ...string) *exec.Cmd {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = g.Path
+
+	// Ensure git doesn't prompt for credentials in non-interactive mode
+	cmd.Env = append(os.Environ(),
+		"GIT_TERMINAL_PROMPT=0", // Disable prompting
+	)
+
+	return cmd
 }
 
 // IsGitRepo checks if the path is a valid git repository
@@ -34,6 +67,17 @@ func (g *GitRepo) GetUserEmail() (string, error) {
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to get user email: %w", err)
+	}
+	return strings.TrimSpace(string(output)), nil
+}
+
+// GetUserName retrieves the user's git name
+func (g *GitRepo) GetUserName() (string, error) {
+	cmd := exec.Command("git", "config", "user.name")
+	cmd.Dir = g.Path
+	output, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("failed to get user name: %w", err)
 	}
 	return strings.TrimSpace(string(output)), nil
 }
@@ -91,14 +135,13 @@ func (g *GitRepo) GetDiff(hash string) (string, error) {
 }
 
 // PushToBackupRef pushes a hash to a backup reference
-func (g *GitRepo) PushToBackupRef(hash, userEmail, branch, remote string) error {
-	// Create ref name: refs/backups/<user_email>/<branch_name>
-	refName := fmt.Sprintf("refs/backups/%s/%s", SanitizeRefName(userEmail), SanitizeRefName(branch))
+func (g *GitRepo) PushToBackupRef(hash, userIdentifier, branch, remote string) error {
+	// Create ref name: refs/backups/<user_identifier>/<branch_name>
+	refName := fmt.Sprintf("refs/backups/%s/%s", SanitizeRefName(userIdentifier), SanitizeRefName(branch))
 
 	// Push the hash to the remote ref
 	// Format: git push <remote> <hash>:<ref>
-	cmd := exec.Command("git", "push", remote, fmt.Sprintf("%s:%s", hash, refName))
-	cmd.Dir = g.Path
+	cmd := g.execGitCommand("push", remote, fmt.Sprintf("%s:%s", hash, refName))
 
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
@@ -111,8 +154,8 @@ func (g *GitRepo) PushToBackupRef(hash, userEmail, branch, remote string) error 
 }
 
 // ListBackupRefs lists all backup references for the current user and branch
-func (g *GitRepo) ListBackupRefs(remote, userEmail, branch string) ([]BackupRef, error) {
-	refPattern := fmt.Sprintf("refs/backups/%s/%s", SanitizeRefName(userEmail), SanitizeRefName(branch))
+func (g *GitRepo) ListBackupRefs(remote, userIdentifier, branch string) ([]BackupRef, error) {
+	refPattern := fmt.Sprintf("refs/backups/%s/%s", SanitizeRefName(userIdentifier), SanitizeRefName(branch))
 
 	// Fetch refs from remote
 	cmd := exec.Command("git", "ls-remote", remote, refPattern)
@@ -228,4 +271,21 @@ func SanitizeRefName(s string) string {
 		"[", "_",
 	)
 	return replacer.Replace(s)
+}
+
+// GenerateUserIdentifier creates a user identifier for backup refs
+// Priority: 1) git_user from global config, 2) git username (sanitized), 3) sanitized email
+func GenerateUserIdentifier(gitUser, gitName, email string) string {
+	// Priority 1: Use git_user from global config if set
+	if gitUser != "" {
+		return SanitizeRefName(gitUser)
+	}
+
+	// Priority 2: Use git username (sanitized)
+	if gitName != "" {
+		return SanitizeRefName(gitName)
+	}
+
+	// Priority 3: Use sanitized email
+	return SanitizeRefName(email)
 }

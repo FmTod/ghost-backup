@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/FmTod/ghost-backup/internal/config"
 	svc "github.com/FmTod/ghost-backup/internal/service"
@@ -19,6 +22,30 @@ var serviceInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install the user service",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Check and prompt for credentials before installing service
+		if !config.CheckCredentialsConfigured() {
+			fmt.Println("⚠ Git credentials not configured")
+			fmt.Println("The service needs credentials to push backups automatically.")
+			fmt.Print("\nWould you like to configure them now? (Y/n): ")
+
+			reader := bufio.NewReader(os.Stdin)
+			response, _ := reader.ReadString('\n')
+			response = strings.ToLower(strings.TrimSpace(response))
+
+			if response == "" || response == "y" || response == "yes" {
+				if _, err := config.PromptForMissingCredentials(); err != nil {
+					fmt.Printf("Warning: Failed to configure credentials: %v\n", err)
+					fmt.Println("You can configure them later with:")
+					fmt.Println("  ghost-backup config set-token --username <user> --token <token>")
+				}
+				fmt.Println()
+			} else {
+				fmt.Println("\nSkipped. You can configure credentials later with:")
+				fmt.Println("  ghost-backup config set-token --username <user> --token <token>")
+				fmt.Println()
+			}
+		}
+
 		fmt.Println("Installing ghost-backup user service...")
 		if err := svc.InstallService(); err != nil {
 			return err
