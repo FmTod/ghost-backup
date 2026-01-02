@@ -11,6 +11,7 @@ import (
 
 var (
 	inspectShowDiff bool
+	inspectUser     string
 )
 
 var inspectCmd = &cobra.Command{
@@ -27,6 +28,10 @@ func init() {
 	rootCmd.AddCommand(inspectCmd)
 
 	inspectCmd.Flags().BoolVarP(&inspectShowDiff, "diff", "d", false, "Show the full diff")
+	
+	// Hidden flag to view backups for a specific user
+	inspectCmd.Flags().StringVar(&inspectUser, "user", "", "Inspect backup for a specific user (hidden)")
+	inspectCmd.Flags().MarkHidden("user")
 }
 
 func runInspect(_ *cobra.Command, args []string) error {
@@ -46,25 +51,32 @@ func runInspect(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("not a git repository: %s", cwd)
 	}
 
-	// Get user email and branch for fetching
-	userEmail, err := repo.GetUserEmail()
-	if err != nil {
-		return fmt.Errorf("failed to get user email: %w", err)
+	var userIdentifier string
+
+	// If --user flag is provided, use it directly (sanitized for ref safety)
+	if inspectUser != "" {
+		userIdentifier = git.SanitizeRefName(inspectUser)
+	} else {
+		// Get user email and branch for fetching
+		userEmail, err := repo.GetUserEmail()
+		if err != nil {
+			return fmt.Errorf("failed to get user email: %w", err)
+		}
+
+		// Get user name for identifier generation
+		// Error is non-fatal as GenerateUserIdentifier has fallback logic
+		userName, _ := repo.GetUserName()
+
+		// Load global config to get git_user if configured
+		globalConfig, err := config.LoadGlobalConfig()
+		if err != nil {
+			// Non-fatal, use empty config
+			globalConfig = &config.GlobalConfig{}
+		}
+
+		// Generate user identifier
+		userIdentifier = git.GenerateUserIdentifier(globalConfig.GitUser, userName, userEmail)
 	}
-
-	// Get user name for identifier generation
-	// Error is non-fatal as GenerateUserIdentifier has fallback logic
-	userName, _ := repo.GetUserName()
-
-	// Load global config to get git_user if configured
-	globalConfig, err := config.LoadGlobalConfig()
-	if err != nil {
-		// Non-fatal, use empty config
-		globalConfig = &config.GlobalConfig{}
-	}
-
-	// Generate user identifier
-	userIdentifier := git.GenerateUserIdentifier(globalConfig.GitUser, userName, userEmail)
 
 	branch, err := repo.GetCurrentBranch()
 	if err != nil {

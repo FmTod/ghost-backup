@@ -41,3 +41,19 @@ func TestInspectCmd_DiffFlag(t *testing.T) {
 		t.Errorf("--diff flag default value should be 'false', got %s", diffFlag.DefValue)
 	}
 }
+
+func TestInspectCmd_UserFlag(t *testing.T) {
+	// inspect command should have a hidden --user flag
+	userFlag := inspectCmd.Flags().Lookup("user")
+	if userFlag == nil {
+		t.Fatal("inspect command should have a --user flag")
+	}
+
+	if userFlag.Hidden != true {
+		t.Error("--user flag should be hidden")
+	}
+
+	if userFlag.DefValue != "" {
+		t.Errorf("--user flag default value should be empty, got %s", userFlag.DefValue)
+	}
+}
