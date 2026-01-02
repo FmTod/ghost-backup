@@ -52,7 +52,10 @@ func (w *Worker) Start() {
 	w.updateTicker(time.Duration(cfg.Interval) * time.Second)
 
 	for {
-		// Get ticker channel under mutex protection
+		// Get ticker channel under mutex protection.
+		// Note: Even if the ticker is replaced after we read the channel,
+		// the cached channel remains valid (it just stops receiving ticks).
+		// The new ticker's channel will be picked up on the next iteration.
 		w.mu.RLock()
 		tickerCh := w.ticker.C
 		w.mu.RUnlock()
