@@ -1,0 +1,67 @@
+name: "Reusable Security Scan"
+
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        description: 'Go version to use'
+        required: false
+        type: string
+        default: '1.25'
+      upload-results:
+        description: 'Upload results to Github'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  gosec:
+    name: "GoSec"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ inputs.go-version }}
+
+      - name: Run Gosec Security Scanner
+        if: ${{ !inputs.upload-results }}
+        uses: securego/gosec@master
+        with:
+          args: ./...
+
+      - name: Run Gosec Security Scanner
+        if: ${{ inputs.upload-results }}
+        uses: securego/gosec@master
+        with:
+          args: '-no-fail -fmt sarif -out results.sarif ./...'
+
+      - name: Upload SARIF file
+        if: ${{ inputs.upload-results }}
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: results.sarif
+
+  security:
+    name: "Nancy"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ inputs.go-version }}
+
+      - name: WriteGoList
+        run: go list -json -m all > go.list
+
+      - name: Nancy
+        uses: sonatype-nexus-community/nancy-github-action@main
+        with:
+          nancyCommand: sleuth --username ${{ secrets.OSS_INDEX_USERNAME }} --token ${{ secrets.OSS_INDEX_TOKEN }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
