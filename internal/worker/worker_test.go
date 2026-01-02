@@ -349,7 +349,8 @@ func TestWorker_Stop_BeforeStart(t *testing.T) {
 
 func TestManager_StartWorkers_ExistingRepo(t *testing.T) {
 	tmpDir := t.TempDir()
-	logger := log.New(os.Stdout, "", log.LstdFlags)
+	// Use a discard logger to avoid race conditions in logging
+	logger := log.New(os.NewFile(0, os.DevNull), "", 0)
 	manager := NewManager(logger)
 
 	// Create a directory that exists
@@ -367,12 +368,13 @@ func TestManager_StartWorkers_ExistingRepo(t *testing.T) {
 		t.Fatalf("StartWorkers() error = %v", err)
 	}
 
-	// Worker should be created for existing path
-	if manager.GetWorkerCount() != 1 {
-		t.Errorf("GetWorkerCount() = %d, want 1 for existing path", manager.GetWorkerCount())
+	// Worker should be created for existing path (added to map immediately)
+	count := manager.GetWorkerCount()
+	if count != 1 {
+		t.Errorf("GetWorkerCount() = %d, want 1 for existing path", count)
 	}
 
-	// Clean up
+	// Clean up - stop workers
 	manager.StopWorkers()
 }
 
