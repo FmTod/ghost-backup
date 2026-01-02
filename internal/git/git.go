@@ -189,8 +189,9 @@ func (g *GitRepo) ListBackupRefs(remote, userIdentifier, branch string) ([]Backu
 
 // ListAllBackupUsers lists all users who have backups in the remote repository
 func (g *GitRepo) ListAllBackupUsers(remote string) ([]string, error) {
-	// Fetch all refs under refs/backups/
-	cmd := exec.Command("git", "ls-remote", remote, "refs/backups/*")
+	// Fetch all refs under refs/backups/*/*
+	// Pattern matches refs/backups/<user>/<branch>
+	cmd := exec.Command("git", "ls-remote", remote, "refs/backups/*/*")
 	cmd.Dir = g.Path
 	output, err := cmd.Output()
 	if err != nil {

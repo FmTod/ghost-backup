@@ -26,7 +26,7 @@ func init() {
 
 	// Hidden flag to view backups for a specific user
 	listCmd.Flags().StringVar(&listUser, "user", "", "List backups for a specific user (hidden)")
-	_ = listCmd.Flags().MarkHidden("user")
+	listCmd.Flags().MarkHidden("user")
 }
 
 func runList(*cobra.Command, []string) error {
