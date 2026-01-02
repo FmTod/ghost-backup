@@ -53,6 +53,7 @@ func runInspect(_ *cobra.Command, args []string) error {
 	}
 
 	// Get user name for identifier generation
+	// Error is non-fatal as GenerateUserIdentifier has fallback logic
 	userName, _ := repo.GetUserName()
 
 	// Load global config to get git_user if configured

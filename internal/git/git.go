@@ -144,7 +144,7 @@ func (g *GitRepo) ObjectExists(hash string) bool {
 
 // GetCommitInfo returns detailed information about a commit/stash
 func (g *GitRepo) GetCommitInfo(hash string) (string, error) {
-	// Use git show with --stat to get summary info without full diff
+	// Use git show with --no-patch to get commit metadata without the diff
 	cmd := exec.Command("git", "show", "--no-patch", "--format=fuller", hash)
 	cmd.Dir = g.Path
 	output, err := cmd.Output()
