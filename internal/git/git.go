@@ -189,10 +189,12 @@ func (g *GitRepo) GetRemote() (string, error) {
 		return "", fmt.Errorf("failed to get remote: %w", err)
 	}
 
-	remotes := strings.Split(strings.TrimSpace(string(output)), "\n")
-	if len(remotes) == 0 {
+	outputStr := strings.TrimSpace(string(output))
+	if outputStr == "" {
 		return "", fmt.Errorf("no remotes configured")
 	}
+
+	remotes := strings.Split(outputStr, "\n")
 
 	// Prefer "origin" if available
 	for _, remote := range remotes {
