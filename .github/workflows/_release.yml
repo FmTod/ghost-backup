@@ -18,6 +18,13 @@ on:
         required: false
         type: boolean
         default: true
+    outputs:
+      new-release-published:
+        description: 'Whether a new release was published'
+        value: ${{ jobs.release.outputs.new-release-published }}
+      new-release-version:
+        description: 'Version of the new release'
+        value: ${{ jobs.release.outputs.new-release-version }}
 
 jobs:
   release:
@@ -28,6 +35,9 @@ jobs:
       issues: write
       pull-requests: write
       id-token: write
+    outputs:
+      new-release-published: ${{ steps.semantic.outputs.new_release_published }}
+      new-release-version: ${{ steps.semantic.outputs.new_release_version }}
 
     steps:
       - name: Checkout
@@ -48,6 +58,7 @@ jobs:
         run: npm audit signatures
 
       - name: Run Semantic Release
+        id: semantic
         run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}

@@ -44,3 +44,14 @@ jobs:
       node-version: "lts/*"
       verify-audit: true
       dry-run: false
+
+  build:
+    name: "📦 Build Binaries"
+    needs: release
+    if: needs.release.outputs.new-release-published == 'true'
+    uses: ./.github/workflows/_build-binary.yml
+    with:
+      go-version: '1.25'
+      upload-artifacts: false
+      release-tag: v${{ needs.release.outputs.new-release-version }}
+
