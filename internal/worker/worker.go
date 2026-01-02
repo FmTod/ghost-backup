@@ -114,15 +114,15 @@ func (w *Worker) checkConfigReload() {
 		return
 	}
 
-	w.mu.RLock()
+	w.mu.Lock()
 	lastMod := w.lastModTime
-	w.mu.RUnlock()
-
-	if info.ModTime().After(lastMod) {
-		w.mu.Lock()
+	shouldReload := info.ModTime().After(lastMod)
+	if shouldReload {
 		w.lastModTime = info.ModTime()
-		w.mu.Unlock()
+	}
+	w.mu.Unlock()
 
+	if shouldReload {
 		cfg, err := w.loadConfig()
 		if err != nil {
 			w.logger.Printf("[%s] Failed to reload config: %v\n", w.repoPath, err)
