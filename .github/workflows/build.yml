@@ -16,9 +16,6 @@ on:
         type: boolean
         default: true
 
-env:
-  GO_VERSION: '1.23'
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
