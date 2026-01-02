@@ -18,7 +18,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    etc.packages = with pkgs; [
+    environment.systemPackages = with pkgs; [
         git
         gitleaks
         cfg.package
