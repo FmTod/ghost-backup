@@ -9,6 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	listUser string
+)
+
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List available backups for the current repository",
@@ -19,6 +23,10 @@ Must be run from within a git repository.`,
 
 func init() {
 	rootCmd.AddCommand(listCmd)
+
+	// Hidden flag to view backups for a specific user
+	listCmd.Flags().StringVar(&listUser, "user", "", "List backups for a specific user (hidden)")
+	_ = listCmd.Flags().MarkHidden("user")
 }
 
 func runList(*cobra.Command, []string) error {
@@ -36,24 +44,31 @@ func runList(*cobra.Command, []string) error {
 		return fmt.Errorf("not a git repository: %s", cwd)
 	}
 
-	// Get user email
-	userEmail, err := repo.GetUserEmail()
-	if err != nil {
-		return fmt.Errorf("failed to get user email: %w", err)
+	var userIdentifier string
+
+	// If --user flag is provided, use it directly
+	if listUser != "" {
+		userIdentifier = listUser
+	} else {
+		// Get user email
+		userEmail, err := repo.GetUserEmail()
+		if err != nil {
+			return fmt.Errorf("failed to get user email: %w", err)
+		}
+
+		// Get user name for identifier generation
+		userName, _ := repo.GetUserName()
+
+		// Load global config to get git_user if configured
+		globalConfig, err := config.LoadGlobalConfig()
+		if err != nil {
+			// Non-fatal, use empty config
+			globalConfig = &config.GlobalConfig{}
+		}
+
+		// Generate user identifier
+		userIdentifier = git.GenerateUserIdentifier(globalConfig.GitUser, userName, userEmail)
 	}
-
-	// Get user name for identifier generation
-	userName, _ := repo.GetUserName()
-
-	// Load global config to get git_user if configured
-	globalConfig, err := config.LoadGlobalConfig()
-	if err != nil {
-		// Non-fatal, use empty config
-		globalConfig = &config.GlobalConfig{}
-	}
-
-	// Generate user identifier
-	userIdentifier := git.GenerateUserIdentifier(globalConfig.GitUser, userName, userEmail)
 
 	// Get current branch
 	branch, err := repo.GetCurrentBranch()

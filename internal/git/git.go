@@ -183,6 +183,77 @@ func (g *GitRepo) ListBackupRefs(remote, userIdentifier, branch string) ([]Backu
 	return refs, nil
 }
 
+// ListAllBackupUsers lists all users who have backups in the remote repository
+func (g *GitRepo) ListAllBackupUsers(remote string) ([]string, error) {
+	// Fetch all refs under refs/backups/
+	cmd := exec.Command("git", "ls-remote", remote, "refs/backups/*")
+	cmd.Dir = g.Path
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list backup users: %w", err)
+	}
+
+	// Parse output and extract unique user identifiers
+	userSet := make(map[string]bool)
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+		parts := strings.Fields(line)
+		if len(parts) >= 2 {
+			// Extract user identifier from ref path
+			// Format: refs/backups/<user_identifier>/<branch>
+			ref := parts[1]
+			if strings.HasPrefix(ref, "refs/backups/") {
+				refParts := strings.Split(ref, "/")
+				if len(refParts) >= 3 {
+					userIdentifier := refParts[2]
+					userSet[userIdentifier] = true
+				}
+			}
+		}
+	}
+
+	// Convert set to slice
+	users := make([]string, 0, len(userSet))
+	for user := range userSet {
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+// ListAllBackupRefsForUser lists all backup references for a specific user across all branches
+func (g *GitRepo) ListAllBackupRefsForUser(remote, userIdentifier string) ([]BackupRef, error) {
+	refPattern := fmt.Sprintf("refs/backups/%s/*", SanitizeRefName(userIdentifier))
+
+	// Fetch refs from remote
+	cmd := exec.Command("git", "ls-remote", remote, refPattern)
+	cmd.Dir = g.Path
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list backup refs for user: %w", err)
+	}
+
+	var refs []BackupRef
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+		parts := strings.Fields(line)
+		if len(parts) >= 2 {
+			refs = append(refs, BackupRef{
+				Hash: parts[0],
+				Ref:  parts[1],
+			})
+		}
+	}
+
+	return refs, nil
+}
+
 // FetchBackupRef fetches a specific backup reference
 func (g *GitRepo) FetchBackupRef(remote, refName string) error {
 	cmd := exec.Command("git", "fetch", remote, fmt.Sprintf("%s:%s", refName, refName))

@@ -26,10 +26,18 @@ func TestListCmd_Configuration(t *testing.T) {
 	}
 }
 
-func TestListCmd_NoFlags(t *testing.T) {
-	// list command should have no flags
-	if listCmd.Flags().HasFlags() {
-		flags := listCmd.Flags()
-		t.Logf("list command has unexpected flags: %v", flags)
+func TestListCmd_UserFlag(t *testing.T) {
+	// list command should have a hidden --user flag
+	userFlag := listCmd.Flags().Lookup("user")
+	if userFlag == nil {
+		t.Fatal("list command should have a --user flag")
+	}
+
+	if userFlag.Hidden != true {
+		t.Error("--user flag should be hidden")
+	}
+
+	if userFlag.DefValue != "" {
+		t.Errorf("--user flag default value should be empty, got %s", userFlag.DefValue)
 	}
 }
