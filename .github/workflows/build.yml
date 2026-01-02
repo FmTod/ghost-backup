@@ -21,6 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  test
     name: "🧪 Test"
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.run-tests }}
     uses: ./.github/workflows/_test.yml
