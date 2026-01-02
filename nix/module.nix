@@ -18,6 +18,12 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    etc.packages = with pkgs; [
+        git
+        gitleaks
+        cfg.package
+    ];
+
     systemd.user.services.ghost-backup = {
       description = "Ghost Backup - Automated Git backup service";
       after = [ "network.target" ];

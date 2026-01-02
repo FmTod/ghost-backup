@@ -25,6 +25,7 @@ pkgs.buildGoModule {
   ];
 
   meta = with pkgs.lib; {
+    mainProgram = "ghost-backup";
     description = "Automated Git backup service for uncommitted changes";
     homepage = "https://gitlab.neoscode.com/development-tools/ghost-backup";
     license = licenses.mit;
