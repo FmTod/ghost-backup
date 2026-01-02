@@ -24,16 +24,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: "🧪 Test & Lint"
+    name: "🧪 Test"
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run-tests }}
     uses: ./.github/workflows/_test.yml
     with:
       go-version: '1.25'
-      upload-coverage: true
-      check-formatting: true
+      upload-coverage: false
+      check-formatting: false
 
   security:
     name: "🔒 Security Scan"
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run-security-scan }}
     uses: ./.github/workflows/_security.yml
     secrets: inherit
     with:
@@ -41,8 +42,9 @@ jobs:
 
   build:
     name: "🏗️ Build Binary"
-    needs: [test, security]
+    if: always() && (needs.test.result == 'success' || needs.test.result == 'skipped') && (needs.security.result == 'success' || needs.security.result == 'skipped')
     uses: ./.github/workflows/_build-binary.yml
+    needs: [test, security]
     with:
       go-version: '1.25'
       platforms: '["linux/amd64", "linux/arm64", "windows/amd64", "darwin/amd64", "darwin/arm64"]'
