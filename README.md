@@ -50,17 +50,26 @@ Add to your NixOS configuration:
       modules = [
         ghost-backup.nixosModules.default
         {
-          services.ghost-backup = {
-            enable = true;
-            # Optional: customize user/group
-            # user = "ghost-backup";
-            # group = "ghost-backup";
-          };
+          services.ghost-backup.enable = true;
         }
       ];
     };
   };
 }
+```
+
+This configures a systemd user service that runs as your user account.
+
+Manage the service with:
+```bash
+# Check status
+systemctl --user status ghost-backup
+
+# View logs
+journalctl --user -u ghost-backup -f
+
+# Restart
+systemctl --user restart ghost-backup
 ```
 
 #### Development Shell

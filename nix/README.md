@@ -10,11 +10,10 @@ This directory contains the separated Nix configuration for the Ghost Backup pro
   - Sets up test environment
   - Configures ldflags and metadata
 
-- **`module.nix`** - The NixOS module for the systemd service
+- **`module.nix`** - The NixOS module for the systemd user service
   - Provides `services.ghost-backup` configuration options
-  - Creates system user and group
-  - Configures systemd service with security hardening
-  - Manages state directory
+  - Configures systemd user service with security hardening
+  - Runs as the user who enables it (no separate system user needed)
 
 - **`shell.nix`** - The development shell environment
   - Provides Go toolchain and development tools
@@ -58,9 +57,9 @@ Edit `package.nix` to change:
 ### To modify the NixOS service:
 Edit `module.nix` to:
 - Add new configuration options
-- Change systemd service settings
+- Change systemd user service settings
 - Adjust security hardening
-- Modify user/group configuration
+- Modify service behavior
 
 ### To change the dev environment:
 Edit `shell.nix` to:
