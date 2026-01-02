@@ -87,6 +87,68 @@ cd ghost-backup
 nix develop
 ```
 
+### Quick Install (Linux/macOS)
+
+Install the latest release with a single command:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/neoscode/ghost-backup/main/install.sh | bash
+```
+
+This script will:
+- Detect your operating system and architecture
+- Download the appropriate binary from the latest GitHub release
+- Install it to `/usr/local/bin/ghost-backup`
+- Verify the installation
+
+To install to a custom location:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/neoscode/ghost-backup/main/install.sh | bash -s -- --prefix ~/.local
+```
+
+#### Manual Installation
+
+1. Download the latest release for your platform from the [releases page](https://github.com/neoscode/ghost-backup/releases/latest):
+
+   **Linux (amd64)**:
+   ```bash
+   curl -L -o ghost-backup https://github.com/neoscode/ghost-backup/releases/latest/download/ghost-backup-linux-amd64
+   chmod +x ghost-backup
+   sudo mv ghost-backup /usr/local/bin/
+   ```
+
+   **Linux (arm64)**:
+   ```bash
+   curl -L -o ghost-backup https://github.com/neoscode/ghost-backup/releases/latest/download/ghost-backup-linux-arm64
+   chmod +x ghost-backup
+   sudo mv ghost-backup /usr/local/bin/
+   ```
+
+   **macOS (Intel)**:
+   ```bash
+   curl -L -o ghost-backup https://github.com/neoscode/ghost-backup/releases/latest/download/ghost-backup-darwin-amd64
+   chmod +x ghost-backup
+   sudo mv ghost-backup /usr/local/bin/
+   ```
+
+   **macOS (Apple Silicon)**:
+   ```bash
+   curl -L -o ghost-backup https://github.com/neoscode/ghost-backup/releases/latest/download/ghost-backup-darwin-arm64
+   chmod +x ghost-backup
+   sudo mv ghost-backup /usr/local/bin/
+   ```
+
+   **Windows**:
+   
+   Download [ghost-backup-windows-amd64.exe](https://github.com/neoscode/ghost-backup/releases/latest/download/ghost-backup-windows-amd64.exe) and add it to your PATH.
+
+2. Verify the installation:
+
+   ```bash
+   ghost-backup --version
+   ```
+
 ### Building from Source
 
 ```bash
