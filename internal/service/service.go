@@ -100,12 +100,15 @@ func GetLogFilePath() (string, error) {
 	return getLogFilePath()
 }
 
-// NewService creates a new system service
+// NewService creates a new user service
 func NewService() (service.Service, error) {
 	svcConfig := &service.Config{
 		Name:        "ghost-backup",
 		DisplayName: "Ghost Backup Service",
 		Description: "Automated git backup service that monitors multiple repositories",
+		Option: service.KeyValue{
+			"UserService": true, // Run as user service instead of system service
+		},
 	}
 
 	prg := &Program{}
@@ -124,7 +127,7 @@ func NewService() (service.Service, error) {
 	return s, nil
 }
 
-// InstallService installs the system service
+// InstallService installs the user service
 func InstallService() error {
 	s, err := NewService()
 	if err != nil {
@@ -139,7 +142,7 @@ func InstallService() error {
 	return nil
 }
 
-// UninstallService uninstalls the system service
+// UninstallService uninstalls the user service
 func UninstallService() error {
 	s, err := NewService()
 	if err != nil {
@@ -154,7 +157,7 @@ func UninstallService() error {
 	return nil
 }
 
-// StartService starts the system service
+// StartService starts the user service
 func StartService() error {
 	s, err := NewService()
 	if err != nil {
@@ -169,7 +172,7 @@ func StartService() error {
 	return nil
 }
 
-// StopService stops the system service
+// StopService stops the user service
 func StopService() error {
 	s, err := NewService()
 	if err != nil {
@@ -184,7 +187,7 @@ func StopService() error {
 	return nil
 }
 
-// RestartService restarts the system service
+// RestartService restarts the user service
 func RestartService() error {
 	s, err := NewService()
 	if err != nil {

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/neoscode/ghost-backup/internal/config"
@@ -83,13 +82,6 @@ func runInit(*cobra.Command, []string) error {
 
 	// Ensure service is running
 	fmt.Printf("Ensuring service is installed and running...\n")
-
-	// Check if we need sudo
-	if os.Geteuid() != 0 {
-		fmt.Printf("\nNote: Installing system services may require root privileges.\n")
-		fmt.Printf("If the installation fails, try running with sudo:\n")
-		fmt.Printf("  sudo ghost-backup init --path %s\n\n", absPath)
-	}
 
 	if err := service.EnsureServiceRunning(); err != nil {
 		return fmt.Errorf("failed to ensure service is running: %w", err)

@@ -10,7 +10,7 @@ A production-ready, multi-platform CLI tool that provides automated git backup f
 - **Secret Scanning**: Optional integration with gitleaks to prevent backing up sensitive data
 - **Cross-Platform**: Works on Linux, macOS, and Windows
 - **Namespace Isolation**: Backups are organized by user email and branch name
-- **Background Service**: Runs as a system service with minimal overhead
+- **Background Service**: Runs as a user service with minimal overhead
 
 ## Installation
 
@@ -110,7 +110,7 @@ ghost-backup init
 This will:
 - Create `.ghost-backup.json` with default settings
 - Add the repository to the global registry
-- Install and start the system service (may require sudo)
+- Install and start the user service
 
 ### 2. Custom Initialization
 
@@ -240,8 +240,8 @@ ghost-backup service restart
 ### Install/Uninstall Service
 
 ```bash
-sudo ghost-backup service install
-sudo ghost-backup service uninstall
+ghost-backup service install
+ghost-backup service uninstall
 ```
 
 ### Run Service in Foreground (for debugging)
@@ -318,19 +318,25 @@ This will identify common issues and provide specific fix suggestions.
 
 ### Service Won't Start
 
-**Problem**: Service fails to start, possibly due to permissions.
+**Problem**: Service fails to start.
 
-**Solution**: System services typically require root privileges. Try:
+**Solution**: Try running the service in the foreground to see errors:
 
 ```bash
-sudo ghost-backup init
+ghost-backup service run
 ```
 
-Or manually install and start the service:
+Or check if the service is properly installed:
 
 ```bash
-sudo ghost-backup service install
-sudo ghost-backup service start
+ghost-backup service status
+```
+
+If not installed, install it:
+
+```bash
+ghost-backup service install
+ghost-backup service start
 ```
 
 ### Gitleaks Timeout

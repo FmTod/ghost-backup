@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/kardianos/service"
 	"github.com/neoscode/ghost-backup/internal/config"
@@ -18,32 +17,23 @@ var serviceCmd = &cobra.Command{
 
 var serviceInstallCmd = &cobra.Command{
 	Use:   "install",
-	Short: "Install the system service",
+	Short: "Install the user service",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if os.Geteuid() != 0 {
-			fmt.Println("Warning: Installing system services typically requires root privileges.")
-			fmt.Println("If this fails, try running with sudo.")
-		}
-
-		fmt.Println("Installing ghost-backup service...")
+		fmt.Println("Installing ghost-backup user service...")
 		if err := svc.InstallService(); err != nil {
 			return err
 		}
 		fmt.Println("✓ Service installed successfully")
+		fmt.Println("\nTo start the service: ghost-backup service start")
 		return nil
 	},
 }
 
 var serviceUninstallCmd = &cobra.Command{
 	Use:   "uninstall",
-	Short: "Uninstall the system service",
+	Short: "Uninstall the user service",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if os.Geteuid() != 0 {
-			fmt.Println("Warning: Uninstalling system services typically requires root privileges.")
-			fmt.Println("If this fails, try running with sudo.")
-		}
-
-		fmt.Println("Uninstalling ghost-backup service...")
+		fmt.Println("Uninstalling ghost-backup user service...")
 		if err := svc.UninstallService(); err != nil {
 			return err
 		}
@@ -54,9 +44,9 @@ var serviceUninstallCmd = &cobra.Command{
 
 var serviceStartCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Start the system service",
+	Short: "Start the user service",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("Starting ghost-backup service...")
+		fmt.Println("Starting ghost-backup user service...")
 		if err := svc.StartService(); err != nil {
 			return err
 		}
@@ -67,9 +57,9 @@ var serviceStartCmd = &cobra.Command{
 
 var serviceStopCmd = &cobra.Command{
 	Use:   "stop",
-	Short: "Stop the system service",
+	Short: "Stop the user service",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("Stopping ghost-backup service...")
+		fmt.Println("Stopping ghost-backup user service...")
 		if err := svc.StopService(); err != nil {
 			return err
 		}
@@ -80,9 +70,9 @@ var serviceStopCmd = &cobra.Command{
 
 var serviceRestartCmd = &cobra.Command{
 	Use:   "restart",
-	Short: "Restart the system service",
+	Short: "Restart the user service",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("Restarting ghost-backup service...")
+		fmt.Println("Restarting ghost-backup user service...")
 		if err := svc.RestartService(); err != nil {
 			return err
 		}
