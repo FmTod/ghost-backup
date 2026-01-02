@@ -148,7 +148,28 @@ Or use the cherry-pick method:
 ghost-backup restore <hash> --method cherry-pick
 ```
 
-### 5. Generate Pruning Workflow (Optional)
+### 5. Create a Backup Now
+
+To create a backup immediately without waiting for the scheduled interval:
+
+```bash
+cd /path/to/your/repo
+ghost-backup backup
+```
+
+This will:
+- Check for uncommitted changes
+- Create a stash if changes exist
+- Scan for secrets (if enabled)
+- Push the backup to the remote
+
+You can also specify a path:
+
+```bash
+ghost-backup backup --path /path/to/repo
+```
+
+### 6. Generate Pruning Workflow (Optional)
 
 Automatically clean up old backups using GitHub Actions:
 
@@ -167,7 +188,7 @@ Options:
 - `--cron, -c`: Cron schedule (default: "0 2 * * 0" – weekly on Sunday at 2am)
 - `--retention, -r`: Days to keep backups (default: 30)
 
-### 6. Validate Configuration
+### 7. Validate Configuration
 
 Check your repository's configuration and setup:
 
