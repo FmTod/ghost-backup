@@ -134,6 +134,37 @@ func (g *GitRepo) GetDiff(hash string) (string, error) {
 	return string(output), nil
 }
 
+// ObjectExists checks if a git object (commit, stash, etc.) exists in the repository
+func (g *GitRepo) ObjectExists(hash string) bool {
+	cmd := exec.Command("git", "cat-file", "-e", hash)
+	cmd.Dir = g.Path
+	err := cmd.Run()
+	return err == nil
+}
+
+// GetCommitInfo returns detailed information about a commit/stash
+func (g *GitRepo) GetCommitInfo(hash string) (string, error) {
+	// Use git show with --no-patch to get commit metadata without the diff
+	cmd := exec.Command("git", "show", "--no-patch", "--format=fuller", hash)
+	cmd.Dir = g.Path
+	output, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("failed to get commit info: %w", err)
+	}
+	return string(output), nil
+}
+
+// GetFilesChanged returns the list of files changed in a commit/stash
+func (g *GitRepo) GetFilesChanged(hash string) (string, error) {
+	cmd := exec.Command("git", "show", "--stat", "--format=", hash)
+	cmd.Dir = g.Path
+	output, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("failed to get files changed: %w", err)
+	}
+	return string(output), nil
+}
+
 // PushToBackupRef pushes a hash to a backup reference
 func (g *GitRepo) PushToBackupRef(hash, userIdentifier, branch, remote string) error {
 	// Create ref name: refs/backups/<user_identifier>/<branch_name>
