@@ -20,6 +20,64 @@ A production-ready, multi-platform CLI tool that provides automated git backup f
 - Git installed and configured
 - (Optional) [gitleaks](https://github.com/gitleaks/gitleaks) for secret scanning
 
+### Using Nix (Recommended)
+
+#### Run without installing
+
+```bash
+nix run github:neoscode/ghost-backup -- --help
+```
+
+#### Install to your profile
+
+```bash
+nix profile install github:neoscode/ghost-backup
+```
+
+#### NixOS Module
+
+Add to your NixOS configuration:
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    ghost-backup.url = "github:neoscode/ghost-backup";
+  };
+
+  outputs = { nixpkgs, ghost-backup, ... }: {
+    nixosConfigurations.your-hostname = nixpkgs.lib.nixosSystem {
+      modules = [
+        ghost-backup.nixosModules.default
+        {
+          services.ghost-backup = {
+            enable = true;
+            # Optional: customize user/group
+            # user = "ghost-backup";
+            # group = "ghost-backup";
+          };
+        }
+      ];
+    };
+  };
+}
+```
+
+#### Development Shell
+
+Enter a development environment with all dependencies:
+
+```bash
+nix develop github:neoscode/ghost-backup
+```
+
+Or locally:
+
+```bash
+cd ghost-backup
+nix develop
+```
+
 ### Building from Source
 
 ```bash
