@@ -48,7 +48,7 @@ jobs:
           GOARCH: ${{ steps.platform.outputs.goarch }}
         run: |
           mkdir -p dist
-          binary_name="beacon-app-${{ steps.platform.outputs.goos }}-${{ steps.platform.outputs.goarch }}"
+          binary_name="ghost-backup-${{ steps.platform.outputs.goos }}-${{ steps.platform.outputs.goarch }}"
           if [ "${{ steps.platform.outputs.goos }}" = "windows" ]; then
             binary_name="${binary_name}.exe"
           fi
@@ -58,5 +58,5 @@ jobs:
         if: ${{ inputs.upload-artifacts }}
         uses: actions/upload-artifact@v4
         with:
-          name: beacon-app-${{ steps.platform.outputs.goos }}-${{ steps.platform.outputs.goarch }}
-          path: dist/beacon-app-${{ steps.platform.outputs.goos }}-${{ steps.platform.outputs.goarch }}*
+          name: ghost-backup-${{ steps.platform.outputs.goos }}-${{ steps.platform.outputs.goarch }}
+          path: dist/ghost-backup-${{ steps.platform.outputs.goos }}-${{ steps.platform.outputs.goarch }}*
