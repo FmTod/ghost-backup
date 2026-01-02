@@ -1,8 +1,25 @@
 name: "🔍 CI"
 
 on:
-  pull_request:
-    branches: [main, master]
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push to DockerHub"
+        required: false
+        type: boolean
+        default: true
+      run-tests:
+        description: "Run tests before building"
+        required: false
+        type: boolean
+        default: true
+      run-security-scan:
+        description: "Run security scan before building"
+        required: false
+        type: boolean
+        default: true
 
 env:
   GO_VERSION: '1.23'
