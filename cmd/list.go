@@ -10,8 +10,18 @@ import (
 )
 
 var (
-	listUser string
+	listUser   string
+	listBranch string
+	listAll    bool
 )
+
+// truncateHash safely truncates a git hash to a specified length
+func truncateHash(hash string, maxLen int) string {
+	if len(hash) <= maxLen {
+		return hash
+	}
+	return hash[:maxLen]
+}
 
 var listCmd = &cobra.Command{
 	Use:   "list",
@@ -27,6 +37,13 @@ func init() {
 	// Hidden flag to view backups for a specific user
 	listCmd.Flags().StringVar(&listUser, "user", "", "List backups for a specific user (hidden)")
 	listCmd.Flags().MarkHidden("user")
+
+	// Visible flag to specify branch
+	listCmd.Flags().StringVar(&listBranch, "branch", "", "List backups for a specific branch")
+
+	// Hidden flag to list all backups for all users and branches
+	listCmd.Flags().BoolVar(&listAll, "all", false, "List all backups for all users and branches (hidden)")
+	listCmd.Flags().MarkHidden("all")
 }
 
 func runList(*cobra.Command, []string) error {
@@ -42,6 +59,40 @@ func runList(*cobra.Command, []string) error {
 	// Verify it's a git repository
 	if !repo.IsGitRepo() {
 		return fmt.Errorf("not a git repository: %s", cwd)
+	}
+
+	// Get remote
+	remote, err := repo.GetRemote()
+	if err != nil {
+		return fmt.Errorf("failed to get remote: %w", err)
+	}
+
+	// If --all flag is provided, list all backups for all users and branches
+	if listAll {
+		fmt.Printf("Fetching all backups for all users and branches...\n\n")
+
+		// List all backup refs
+		refs, err := repo.ListAllBackupRefs(remote)
+		if err != nil {
+			return fmt.Errorf("failed to list all backups: %w", err)
+		}
+
+		if len(refs) == 0 {
+			fmt.Printf("No backups found.\n")
+			return nil
+		}
+
+		fmt.Printf("Available backups:\n\n")
+		for i, ref := range refs {
+			fmt.Printf("%d. %s\n", i+1, ref.Hash[:12])
+			fmt.Printf("   Full hash: %s\n", ref.Hash)
+			fmt.Printf("   Ref: %s\n\n", ref.Ref)
+		}
+
+		fmt.Printf("Total: %d backups\n", len(refs))
+		fmt.Printf("To restore a backup, run: ghost-backup restore <hash>\n")
+
+		return nil
 	}
 
 	var userIdentifier string
@@ -70,16 +121,17 @@ func runList(*cobra.Command, []string) error {
 		userIdentifier = git.GenerateUserIdentifier(globalConfig.GitUser, userName, userEmail)
 	}
 
-	// Get current branch
-	branch, err := repo.GetCurrentBranch()
-	if err != nil {
-		return fmt.Errorf("failed to get current branch: %w", err)
-	}
+	var branch string
 
-	// Get remote
-	remote, err := repo.GetRemote()
-	if err != nil {
-		return fmt.Errorf("failed to get remote: %w", err)
+	// If --branch flag is provided, use it
+	if listBranch != "" {
+		branch = listBranch
+	} else {
+		// Get current branch
+		branch, err = repo.GetCurrentBranch()
+		if err != nil {
+			return fmt.Errorf("failed to get current branch: %w", err)
+		}
 	}
 
 	fmt.Printf("Fetching backups for %s on branch %s...\n\n", userIdentifier, branch)
@@ -97,7 +149,7 @@ func runList(*cobra.Command, []string) error {
 
 	fmt.Printf("Available backups:\n\n")
 	for i, ref := range refs {
-		fmt.Printf("%d. %s\n", i+1, ref.Hash[:12])
+		fmt.Printf("%d. %s\n", i+1, truncateHash(ref.Hash, 12))
 		fmt.Printf("   Full hash: %s\n", ref.Hash)
 		fmt.Printf("   Ref: %s\n\n", ref.Ref)
 	}
