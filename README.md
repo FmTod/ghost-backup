@@ -180,12 +180,12 @@ This will:
 Specify custom settings during initialization:
 
 ```bash
-ghost-backup init --interval 300 --scan-secrets=false
+ghost-backup init --interval 5 --scan-secrets=false
 ```
 
 Options:
 - `--path, -p`: Path to the repository (default: current directory)
-- `--interval, -i`: Backup interval in seconds (default: 60)
+- `--interval, -i`: Backup interval in minutes (default: 1)
 - `--scan-secrets, -s`: Enable secret scanning with gitleaks (default: true)
 
 ### 3. View Backups
@@ -336,7 +336,7 @@ Each repository has its own configuration file at `.ghost-backup.json`:
 
 ```json
 {
-  "interval": 60,
+  "interval": 1,
   "scan_secrets": true
 }
 ```
@@ -347,7 +347,7 @@ Each repository has its own configuration file at `.ghost-backup.json`:
 
 ### Configuration Options
 
-- **interval**: Backup interval in seconds (minimum recommended: 60)
+- **interval**: Backup interval in minutes (minimum recommended: 1)
 - **scan_secrets**: Whether to scan for secrets using gitleaks before backing up
 
 ## Service Management
@@ -571,7 +571,7 @@ ghost-backup config get-token
 ```bash
 # Edit .ghost-backup.json
 {
-  "interval": 60,
+  "interval": 1,
   "scan_secrets": false
 }
 ```
@@ -594,7 +594,7 @@ ghost-backup config get-token
 
 ```json
 {
-  "interval": 60,
+  "interval": 1,
   "scan_secrets": false
 }
 ```
@@ -657,13 +657,13 @@ If your repository has multiple remotes, ghost-backup will use the first one fou
 Different repositories can have different backup intervals:
 
 ```bash
-# Project with frequent changes - backup every 30 seconds
+# Project with frequent changes - backup every minute
 cd ~/project1
-echo '{"interval": 30, "scan_secrets": true}' > .ghost-backup.json
+echo '{"interval": 1, "scan_secrets": true}' > .ghost-backup.json
 
 # Stable project - backup every 5 minutes
 cd ~/project2
-echo '{"interval": 300, "scan_secrets": true}' > .ghost-backup.json
+echo '{"interval": 5, "scan_secrets": true}' > .ghost-backup.json
 ```
 
 ### Restoring to a Different Branch
@@ -702,12 +702,12 @@ ghost-backup init
 ```bash
 # Main repository on 'main' branch
 cd ~/project
-ghost-backup init --interval 60
+ghost-backup init --interval 1
 
 # Create worktree for feature development
 git worktree add ../project-feature feature-branch
 cd ../project-feature
-ghost-backup init --interval 30  # More frequent backups for active development
+ghost-backup init --interval 1  # Same default interval
 
 # Both locations are monitored independently with their own settings
 ```

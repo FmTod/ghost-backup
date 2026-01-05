@@ -49,7 +49,7 @@ func (w *Worker) Start() {
 		return
 	}
 
-	w.updateTicker(time.Duration(cfg.Interval) * time.Second)
+	w.updateTicker(time.Duration(cfg.Interval) * time.Minute)
 
 	for {
 		// Get ticker channel under mutex protection.
@@ -132,9 +132,9 @@ func (w *Worker) checkConfigReload() {
 			return
 		}
 
-		w.logger.Printf("[%s] Config reloaded: interval=%ds, scan_secrets=%v\n",
+		w.logger.Printf("[%s] Config reloaded: interval=%dm, scan_secrets=%v\n",
 			w.repoPath, cfg.Interval, cfg.ScanSecrets)
-		w.updateTicker(time.Duration(cfg.Interval) * time.Second)
+		w.updateTicker(time.Duration(cfg.Interval) * time.Minute)
 	}
 }
 

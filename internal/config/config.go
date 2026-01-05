@@ -22,12 +22,12 @@ type GlobalConfig struct {
 
 // LocalConfig represents the per-repository configuration
 type LocalConfig struct {
-	Interval    int  `json:"interval"`     // Backup interval in seconds
+	Interval    int  `json:"interval"`     // Backup interval in minutes
 	ScanSecrets bool `json:"scan_secrets"` // Whether to scan for secrets using gitleaks
 }
 
 const (
-	DefaultInterval    = 60
+	DefaultInterval    = 1
 	DefaultScanSecrets = true
 )
 
