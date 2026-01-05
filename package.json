@@ -1,11 +1,15 @@
 {
   "name": "ghost-backup",
-  "description": "Automated Git backup service for uncommitted changes",
   "version": "1.0.0",
-  "type": "module",
   "devDependencies": {
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/github": "^11.0.0",
-    "semantic-release": "^24.0.0"
-  }
+    "@commitlint/cli": "^20.3.0",
+    "@commitlint/config-conventional": "^20.3.0",
+    "@commitlint/format": "^20.2.0",
+    "husky": "^9.1.7"
+  },
+  "description": "Automated Git backup service for uncommitted changes",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "type": "module"
 }
