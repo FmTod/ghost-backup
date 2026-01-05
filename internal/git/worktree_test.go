@@ -7,7 +7,9 @@ import (
 "testing"
 )
 
-func TestGitRepo_WorktreeSupport(t *testing.T) {
+// setupWorktreeTestRepo creates a main repository and a worktree for testing
+// Returns the paths to the main repo and the worktree
+func setupWorktreeTestRepo(t *testing.T) (string, string) {
 // Create main repository
 mainRepo := t.TempDir()
 
@@ -56,6 +58,12 @@ cmd.Dir = mainRepo
 if err := cmd.Run(); err != nil {
 t.Fatalf("Failed to create worktree: %v", err)
 }
+
+return mainRepo, worktreePath
+}
+
+func TestGitRepo_WorktreeSupport(t *testing.T) {
+_, worktreePath := setupWorktreeTestRepo(t)
 
 // Test worktree with GitRepo
 repo := NewGitRepo(worktreePath)
@@ -109,54 +117,7 @@ t.Error("HasChanges() = false after creating file in worktree")
 }
 
 func TestGitRepo_WorktreeCreateStash(t *testing.T) {
-// Create main repository
-mainRepo := t.TempDir()
-
-cmd := exec.Command("git", "init")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to initialize main repo: %v", err)
-}
-
-// Configure git
-configCmds := [][]string{
-{"git", "config", "user.name", "Test User"},
-{"git", "config", "user.email", "test@example.com"},
-}
-
-for _, cmdArgs := range configCmds {
-cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to configure git: %v", err)
-}
-}
-
-// Create initial commit
-testFile := filepath.Join(mainRepo, "test.txt")
-if err := os.WriteFile(testFile, []byte("initial"), 0644); err != nil {
-t.Fatalf("Failed to create test file: %v", err)
-}
-
-cmd = exec.Command("git", "add", ".")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to git add: %v", err)
-}
-
-cmd = exec.Command("git", "commit", "-m", "Initial commit")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to git commit: %v", err)
-}
-
-// Create worktree
-worktreePath := filepath.Join(t.TempDir(), "worktree-branch")
-cmd = exec.Command("git", "worktree", "add", worktreePath, "-b", "feature-branch")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to create worktree: %v", err)
-}
+_, worktreePath := setupWorktreeTestRepo(t)
 
 // Modify file in worktree
 worktreeFile := filepath.Join(worktreePath, "test.txt")
@@ -186,54 +147,7 @@ t.Error("Created stash object does not exist")
 }
 
 func TestGitRepo_WorktreeGetDiff(t *testing.T) {
-// Create main repository
-mainRepo := t.TempDir()
-
-cmd := exec.Command("git", "init")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to initialize main repo: %v", err)
-}
-
-// Configure git
-configCmds := [][]string{
-{"git", "config", "user.name", "Test User"},
-{"git", "config", "user.email", "test@example.com"},
-}
-
-for _, cmdArgs := range configCmds {
-cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to configure git: %v", err)
-}
-}
-
-// Create initial commit
-testFile := filepath.Join(mainRepo, "test.txt")
-if err := os.WriteFile(testFile, []byte("initial"), 0644); err != nil {
-t.Fatalf("Failed to create test file: %v", err)
-}
-
-cmd = exec.Command("git", "add", ".")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to git add: %v", err)
-}
-
-cmd = exec.Command("git", "commit", "-m", "Initial commit")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to git commit: %v", err)
-}
-
-// Create worktree
-worktreePath := filepath.Join(t.TempDir(), "worktree-branch")
-cmd = exec.Command("git", "worktree", "add", worktreePath, "-b", "feature-branch")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to create worktree: %v", err)
-}
+_, worktreePath := setupWorktreeTestRepo(t)
 
 // Create a commit in worktree
 worktreeFile := filepath.Join(worktreePath, "worktree.txt")
@@ -241,7 +155,7 @@ if err := os.WriteFile(worktreeFile, []byte("worktree content"), 0644); err != n
 t.Fatalf("Failed to create file in worktree: %v", err)
 }
 
-cmd = exec.Command("git", "add", ".")
+cmd := exec.Command("git", "add", ".")
 cmd.Dir = worktreePath
 if err := cmd.Run(); err != nil {
 t.Fatalf("Failed to git add in worktree: %v", err)
@@ -275,60 +189,13 @@ t.Error("GetDiff() returned empty diff in worktree")
 }
 
 func TestGitRepo_WorktreeGetRemote(t *testing.T) {
-// Create main repository
-mainRepo := t.TempDir()
-
-cmd := exec.Command("git", "init")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to initialize main repo: %v", err)
-}
-
-// Configure git
-configCmds := [][]string{
-{"git", "config", "user.name", "Test User"},
-{"git", "config", "user.email", "test@example.com"},
-}
-
-for _, cmdArgs := range configCmds {
-cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to configure git: %v", err)
-}
-}
+mainRepo, worktreePath := setupWorktreeTestRepo(t)
 
 // Add a remote to main repo
-cmd = exec.Command("git", "remote", "add", "origin", "https://github.com/test/repo.git")
+cmd := exec.Command("git", "remote", "add", "origin", "https://github.com/test/repo.git")
 cmd.Dir = mainRepo
 if err := cmd.Run(); err != nil {
 t.Fatalf("Failed to add remote: %v", err)
-}
-
-// Create initial commit (needed for worktree)
-testFile := filepath.Join(mainRepo, "test.txt")
-if err := os.WriteFile(testFile, []byte("initial"), 0644); err != nil {
-t.Fatalf("Failed to create test file: %v", err)
-}
-
-cmd = exec.Command("git", "add", ".")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to git add: %v", err)
-}
-
-cmd = exec.Command("git", "commit", "-m", "Initial commit")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to git commit: %v", err)
-}
-
-// Create worktree
-worktreePath := filepath.Join(t.TempDir(), "worktree-branch")
-cmd = exec.Command("git", "worktree", "add", worktreePath, "-b", "feature-branch")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to create worktree: %v", err)
 }
 
 // Test GetRemote in worktree
@@ -344,54 +211,7 @@ t.Errorf("GetRemote() in worktree = %s, want origin", remote)
 }
 
 func TestGitRepo_WorktreeGetUserName(t *testing.T) {
-// Create main repository
-mainRepo := t.TempDir()
-
-cmd := exec.Command("git", "init")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to initialize main repo: %v", err)
-}
-
-// Configure git
-configCmds := [][]string{
-{"git", "config", "user.name", "Worktree User"},
-{"git", "config", "user.email", "worktree@example.com"},
-}
-
-for _, cmdArgs := range configCmds {
-cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to configure git: %v", err)
-}
-}
-
-// Create initial commit
-testFile := filepath.Join(mainRepo, "test.txt")
-if err := os.WriteFile(testFile, []byte("initial"), 0644); err != nil {
-t.Fatalf("Failed to create test file: %v", err)
-}
-
-cmd = exec.Command("git", "add", ".")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to git add: %v", err)
-}
-
-cmd = exec.Command("git", "commit", "-m", "Initial commit")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to git commit: %v", err)
-}
-
-// Create worktree
-worktreePath := filepath.Join(t.TempDir(), "worktree-branch")
-cmd = exec.Command("git", "worktree", "add", worktreePath, "-b", "feature-branch")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to create worktree: %v", err)
-}
+_, worktreePath := setupWorktreeTestRepo(t)
 
 // Test GetUserName in worktree
 repo := NewGitRepo(worktreePath)
@@ -400,69 +220,22 @@ if err != nil {
 t.Fatalf("GetUserName() error in worktree = %v", err)
 }
 
-if userName != "Worktree User" {
-t.Errorf("GetUserName() in worktree = %s, want Worktree User", userName)
+if userName != "Test User" {
+t.Errorf("GetUserName() in worktree = %s, want Test User", userName)
 }
 }
 
 func TestGitRepo_WorktreeObjectExists(t *testing.T) {
-// Create main repository
-mainRepo := t.TempDir()
-
-cmd := exec.Command("git", "init")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to initialize main repo: %v", err)
-}
-
-// Configure git
-configCmds := [][]string{
-{"git", "config", "user.name", "Test User"},
-{"git", "config", "user.email", "test@example.com"},
-}
-
-for _, cmdArgs := range configCmds {
-cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to configure git: %v", err)
-}
-}
-
-// Create initial commit
-testFile := filepath.Join(mainRepo, "test.txt")
-if err := os.WriteFile(testFile, []byte("initial"), 0644); err != nil {
-t.Fatalf("Failed to create test file: %v", err)
-}
-
-cmd = exec.Command("git", "add", ".")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to git add: %v", err)
-}
-
-cmd = exec.Command("git", "commit", "-m", "Initial commit")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to git commit: %v", err)
-}
+mainRepo, worktreePath := setupWorktreeTestRepo(t)
 
 // Get commit hash from main repo
-cmd = exec.Command("git", "rev-parse", "HEAD")
+cmd := exec.Command("git", "rev-parse", "HEAD")
 cmd.Dir = mainRepo
 output, err := cmd.Output()
 if err != nil {
 t.Fatalf("Failed to get HEAD hash: %v", err)
 }
 commitHash := string(output)[:40]
-
-// Create worktree
-worktreePath := filepath.Join(t.TempDir(), "worktree-branch")
-cmd = exec.Command("git", "worktree", "add", worktreePath, "-b", "feature-branch")
-cmd.Dir = mainRepo
-if err := cmd.Run(); err != nil {
-t.Fatalf("Failed to create worktree: %v", err)
-}
 
 // Test ObjectExists in worktree for commit from main repo
 repo := NewGitRepo(worktreePath)
