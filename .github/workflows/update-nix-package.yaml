@@ -2,8 +2,10 @@ name: "📦 Update Nix Package"
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -11,13 +13,16 @@ permissions:
 
 jobs:
   update-nix-package:
-    name: "Update nix/package.nix"
+    name: "Update nix/package.nix vendorHash"
     runs-on: ubuntu-latest
+    # Only run on release-please PRs
+    if: startsWith(github.head_ref, 'release-please--')
 
     steps:
-      - name: Checkout repository
+      - name: Checkout PR branch
         uses: actions/checkout@v5
         with:
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -26,24 +31,29 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version from release
+      - name: Extract version from nix/package.nix
         id: version
         run: |
-          # Remove 'v' prefix if present
-          VERSION="${{ github.event.release.tag_name }}"
-          VERSION="${VERSION#v}"
+          # Extract current version from nix/package.nix
+          VERSION=$(grep -oP 'version = "\K[^"]+' nix/package.nix)
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "Extracted version: ${VERSION}"
 
-      - name: Update version in nix/package.nix
+      - name: Check if vendorHash needs update
+        id: check
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          sed -i "s/version = \".*\";/version = \"${VERSION}\";/" \
-            nix/package.nix
-          echo "Updated version to ${VERSION}"
+          # Check if nix/package.nix was modified in this PR
+          if git diff origin/main...HEAD --name-only | grep -q "nix/package.nix"; then
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+            echo "nix/package.nix was modified, will update vendorHash"
+          else
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+            echo "nix/package.nix was not modified, skipping vendorHash update"
+          fi
 
       - name: Calculate vendor hash
         id: vendor_hash
+        if: steps.check.outputs.needs_update == 'true'
         run: |
           # Use a fake hash to trigger Nix to tell us the correct hash
           FAKE_HASH="sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
@@ -84,6 +94,7 @@ jobs:
           echo "Calculated vendor hash: ${EXPECTED_HASH}"
 
       - name: Update vendor hash in nix/package.nix
+        if: steps.check.outputs.needs_update == 'true'
         run: |
           VENDOR_HASH="${{ steps.vendor_hash.outputs.vendor_hash }}"
           sed -i "s/vendorHash = \".*\";/vendorHash = \"${VENDOR_HASH}\";/" \
@@ -91,35 +102,18 @@ jobs:
           echo "Updated vendor hash to ${VENDOR_HASH}"
 
       - name: Verify changes
+        if: steps.check.outputs.needs_update == 'true'
         run: |
           echo "=== Updated nix/package.nix ==="
           cat nix/package.nix
           echo "=== Git diff ==="
           git --no-pager diff nix/package.nix
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: >-
-            chore(nix): update package.nix to version
-            ${{ steps.version.outputs.version }}
-          title: >-
-            chore(nix): update package.nix to version
-            ${{ steps.version.outputs.version }}
-          body: |
-            Automated update of nix/package.nix for release
-            ${{ github.event.release.tag_name }}
-
-            Changes:
-            - Updated version to ${{ steps.version.outputs.version }}
-            - Updated vendorHash to
-              ${{ steps.vendor_hash.outputs.vendor_hash }}
-
-            This PR was automatically created by the
-            update-nix-package workflow.
-          branch: "nix/update-package-${{ steps.version.outputs.version }}"
-          delete-branch: true
-          labels: |
-            automated
-            nix
+      - name: Commit and push changes
+        if: steps.check.outputs.needs_update == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add nix/package.nix
+          git commit -m "chore(nix): update vendorHash for version ${{ steps.version.outputs.version }}"
+          git push origin ${{ github.head_ref }}

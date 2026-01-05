@@ -2,11 +2,11 @@
 
 pkgs.buildGoModule {
   pname = "ghost-backup";
-  version = "0.1.8";
+  version = "0.1.8"; # x-release-please-version
 
   src = ../.;
 
-  vendorHash = "sha256-FSUiVMvZNA1ZzaCRFjbBzeXUOicRg5Y2weyk4Ze4e88=";
+  vendorHash = "sha256-FSUiVMvZNA1ZzaCRFjbBzeXUOicRg5Y2weyk4Ze4e88="; # Updated automatically by update-nix-package workflow
 
   # Add git to the build environment for tests
   nativeBuildInputs = [ pkgs.git ];
