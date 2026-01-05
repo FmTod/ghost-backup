@@ -100,14 +100,8 @@ func runCheck(cmd *cobra.Command, args []string) error {
 			hasErrors = true
 		} else {
 			fmt.Printf("   [PASS] Configuration is valid\n")
-			fmt.Printf("     - Interval: %d seconds\n", cfg.Interval)
+			fmt.Printf("     - Interval: %d minutes\n", cfg.Interval)
 			fmt.Printf("     - Scan secrets: %v\n", cfg.ScanSecrets)
-
-			// Validate interval
-			if cfg.Interval < 10 {
-				fmt.Printf("   [WARN] Interval is very short (%d seconds)\n", cfg.Interval)
-				warnings = append(warnings, "Very short backup interval may cause performance issues")
-			}
 		}
 	}
 

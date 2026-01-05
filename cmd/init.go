@@ -33,7 +33,7 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 
 	initCmd.Flags().StringVarP(&initPath, "path", "p", ".", "Path to the repository")
-	initCmd.Flags().IntVarP(&initInterval, "interval", "i", config.DefaultInterval, "Backup interval in seconds")
+	initCmd.Flags().IntVarP(&initInterval, "interval", "i", config.DefaultInterval, "Backup interval in minutes")
 	initCmd.Flags().BoolVarP(&initScanSecrets, "scan-secrets", "s", config.DefaultScanSecrets, "Enable secret scanning with gitleaks")
 }
 
@@ -63,7 +63,7 @@ func runInit(*cobra.Command, []string) error {
 	}
 
 	fmt.Printf("✓ Created local config: .ghost-backup.json\n")
-	fmt.Printf("  - Interval: %d seconds\n", initInterval)
+	fmt.Printf("  - Interval: %d minutes\n", initInterval)
 	fmt.Printf("  - Scan secrets: %v\n", initScanSecrets)
 
 	// Load registry
