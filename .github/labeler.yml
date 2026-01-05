@@ -1,0 +1,71 @@
+# Configuration for automatically labeling pull requests based on changed files
+# https://github.com/actions/labeler
+
+# Go source code changes
+"go":
+- changed-files:
+  - any-glob-to-any-file:
+    - "**/*.go"
+    - "go.mod"
+    - "go.sum"
+
+# Infrastructure and deployment
+"infrastructure":
+- changed-files:
+  - any-glob-to-any-file:
+    - "Dockerfile"
+    - "docker-compose.yml"
+    - ".dockerignore"
+    - "Makefile"
+
+# CI/CD workflows
+"ci/cd":
+- changed-files:
+  - any-glob-to-any-file:
+    - ".github/workflows/**"
+    - ".github/dependabot.yml"
+
+# Configuration files
+"config":
+- changed-files:
+  - any-glob-to-any-file:
+    - "**/*config*"
+    - "**/*.json"
+    - "**/*.yml"
+    - "**/*.yaml"
+    - "shell.nix"
+    - "renovate.json"
+    - "commitlint.config.js"
+    - "release.config.mjs"
+
+# Documentation
+"documentation":
+- changed-files:
+  - any-glob-to-any-file:
+    - "README.md"
+    - "CHANGELOG.md"
+    - "CODE_REVIEW.md"
+    - "LICENSE"
+    - "**/*.md"
+
+# Tests
+"tests":
+- changed-files:
+  - any-glob-to-any-file:
+    - "**/*_test.go"
+    - "**/mocks/**"
+
+# Dependencies
+"dependencies":
+- changed-files:
+  - any-glob-to-any-file:
+    - "go.mod"
+    - "go.sum"
+    - "package.json"
+    - "package-lock.json"
+
+# Assets
+"assets":
+- changed-files:
+  - any-glob-to-any-file:
+    - "assets/**"
