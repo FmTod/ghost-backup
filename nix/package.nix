@@ -6,7 +6,7 @@ pkgs.buildGoModule {
 
   src = ../.;
 
-  vendorHash = "sha256-qmz0Qp5kj7AIdU47Kd/zfvquS5kB0Bnfhqq1mdEhTTQ=";
+  vendorHash = "sha256-FSUiVMvZNA1ZzaCRFjbBzeXUOicRg5Y2weyk4Ze4e88=";
 
   # Add git to the build environment for tests
   nativeBuildInputs = [ pkgs.git ];
