@@ -220,6 +220,10 @@ func (g *GitRepo) ListBackupRefs(remote, userIdentifier, branch string) ([]Backu
 
 // ListAllBackupUsers lists all users who have backups in the remote repository
 func (g *GitRepo) ListAllBackupUsers(remote string) ([]string, error) {
+	// The user identifier is at index 2 in the ref path: refs/backups/<user>/<branch>
+	const userIdentifierIndex = 2
+	const minRefPartsLength = 3
+
 	// Fetch all refs under refs/backups/*/*
 	// Pattern matches refs/backups/<user>/<branch>
 	cmd := exec.Command("git", "ls-remote", remote, "refs/backups/*/*")
@@ -243,8 +247,8 @@ func (g *GitRepo) ListAllBackupUsers(remote string) ([]string, error) {
 			ref := parts[1]
 			if strings.HasPrefix(ref, "refs/backups/") {
 				refParts := strings.Split(ref, "/")
-				if len(refParts) >= 3 {
-					userIdentifier := refParts[2]
+				if len(refParts) >= minRefPartsLength {
+					userIdentifier := refParts[userIdentifierIndex]
 					userSet[userIdentifier] = struct{}{}
 				}
 			}
