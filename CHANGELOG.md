@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/FmTod/ghost-backup/compare/v0.3.0...v0.4.0) (2026-01-05)
+
+
+### Features
+
+* add 'only_staged' option to configuration for backing up only staged changes ([51d5a42](https://github.com/FmTod/ghost-backup/commit/51d5a423de1bb9e924079659f0ee9f574cfc64ce))
+* add JSON schema support to local configuration ([cc1ff93](https://github.com/FmTod/ghost-backup/commit/cc1ff935073657100d7c9ae71736474aac94b520))
+
+
+### Bug Fixes
+
+* enhance git repository validation with error handling ([eba6409](https://github.com/FmTod/ghost-backup/commit/eba6409b2d871ef262283abfcc0c98b7cb86f7a0))
+
 ## [0.3.0](https://github.com/FmTod/ghost-backup/compare/v0.2.0...v0.3.0) (2026-01-05)
 
 
