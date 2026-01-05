@@ -185,7 +185,7 @@ ghost-backup init --interval 5 --scan-secrets=false
 
 Options:
 - `--path, -p`: Path to the repository (default: current directory)
-- `--interval, -i`: Backup interval in minutes (default: 1)
+- `--interval, -i`: Backup interval in minutes (default: 60)
 - `--scan-secrets, -s`: Enable secret scanning with gitleaks (default: true)
 
 ### 3. View Backups
@@ -336,7 +336,7 @@ Each repository has its own configuration file at `.ghost-backup.json`:
 
 ```json
 {
-  "interval": 1,
+  "interval": 60,
   "scan_secrets": true
 }
 ```
@@ -571,7 +571,7 @@ ghost-backup config get-token
 ```bash
 # Edit .ghost-backup.json
 {
-  "interval": 1,
+  "interval": 60,
   "scan_secrets": false
 }
 ```
@@ -594,7 +594,7 @@ ghost-backup config get-token
 
 ```json
 {
-  "interval": 1,
+  "interval": 60,
   "scan_secrets": false
 }
 ```
@@ -702,12 +702,12 @@ ghost-backup init
 ```bash
 # Main repository on 'main' branch
 cd ~/project
-ghost-backup init --interval 1
+ghost-backup init --interval 60
 
 # Create worktree for feature development
 git worktree add ../project-feature feature-branch
 cd ../project-feature
-ghost-backup init --interval 1  # Same default interval
+ghost-backup init --interval 60  # Same default interval
 
 # Both locations are monitored independently with their own settings
 ```

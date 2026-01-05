@@ -27,7 +27,7 @@ type LocalConfig struct {
 }
 
 const (
-	DefaultInterval    = 1
+	DefaultInterval    = 60
 	DefaultScanSecrets = true
 )
 
