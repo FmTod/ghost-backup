@@ -11,6 +11,7 @@ A production-ready, multi-platform CLI tool that provides automated git backup f
 - **Cross-Platform**: Works on Linux, macOS, and Windows
 - **Namespace Isolation**: Backups are organized by user email and branch name
 - **Background Service**: Runs as a user service with minimal overhead
+- **Git Worktree Support**: Full support for git worktrees - backup and monitor worktree directories
 
 ## Installation
 
@@ -672,6 +673,43 @@ To restore a backup to a different branch:
 ```bash
 git checkout other-branch
 ghost-backup restore <hash>
+```
+
+### Working with Git Worktrees
+
+Ghost Backup fully supports [git worktrees](https://git-scm.com/docs/git-worktree), which allow you to have multiple working directories from a single repository. You can initialize and monitor worktrees just like regular repositories:
+
+```bash
+# Create a worktree
+cd ~/my-project
+git worktree add ../my-project-feature feature-branch
+
+# Initialize ghost-backup in the worktree
+cd ../my-project-feature
+ghost-backup init
+
+# The worktree will be monitored independently
+# Backups will be organized by branch: refs/backups/<user>/feature-branch
+```
+
+**Key features with worktrees:**
+- Each worktree can have its own `.ghost-backup.json` configuration
+- Backups are organized by the worktree's current branch
+- All git operations (stash, diff, remote) work seamlessly
+- Worktrees share the same remote configuration as the main repository
+
+**Example workflow:**
+```bash
+# Main repository on 'main' branch
+cd ~/project
+ghost-backup init --interval 60
+
+# Create worktree for feature development
+git worktree add ../project-feature feature-branch
+cd ../project-feature
+ghost-backup init --interval 30  # More frequent backups for active development
+
+# Both locations are monitored independently with their own settings
 ```
 
 ## Contributing
