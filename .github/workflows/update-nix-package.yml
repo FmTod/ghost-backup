@@ -1,0 +1,99 @@
+name: "📦 Update Nix Package"
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-nix-package:
+    name: "Update nix/package.nix"
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v26
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version from release
+        id: version
+        run: |
+          # Remove 'v' prefix if present
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Extracted version: ${VERSION}"
+
+      - name: Update version in nix/package.nix
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          sed -i "s/version = \".*\";/version = \"${VERSION}\";/" nix/package.nix
+          echo "Updated version to ${VERSION}"
+          
+      - name: Calculate vendor hash
+        id: vendor_hash
+        run: |
+          # Use a fake hash to trigger Nix to tell us the correct hash
+          FAKE_HASH="sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+          sed -i "s/vendorHash = \".*\";/vendorHash = \"${FAKE_HASH}\";/" nix/package.nix
+          
+          # Try to build and capture the output
+          BUILD_OUTPUT=$(nix build .#ghost-backup --no-link 2>&1 || true)
+          echo "$BUILD_OUTPUT"
+          
+          # Extract the expected hash from the error message
+          # Nix error messages show "got: sha256-..." when hash mismatches
+          EXPECTED_HASH=$(echo "$BUILD_OUTPUT" | grep -oP "got:\s+\K(sha256-[A-Za-z0-9+/=]+)" | head -1)
+          
+          if [ -z "$EXPECTED_HASH" ]; then
+            echo "Failed to extract vendor hash from build output"
+            echo "=== Full build output ==="
+            echo "$BUILD_OUTPUT"
+            exit 1
+          fi
+          
+          echo "vendor_hash=${EXPECTED_HASH}" >> $GITHUB_OUTPUT
+          echo "Calculated vendor hash: ${EXPECTED_HASH}"
+
+      - name: Update vendor hash in nix/package.nix
+        run: |
+          VENDOR_HASH="${{ steps.vendor_hash.outputs.vendor_hash }}"
+          sed -i "s/vendorHash = \".*\";/vendorHash = \"${VENDOR_HASH}\";/" nix/package.nix
+          echo "Updated vendor hash to ${VENDOR_HASH}"
+
+      - name: Verify changes
+        run: |
+          echo "=== Updated nix/package.nix ==="
+          cat nix/package.nix
+          echo "=== Git diff ==="
+          git --no-pager diff nix/package.nix
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(nix): update package.nix to version ${{ steps.version.outputs.version }}"
+          title: "chore(nix): update package.nix to version ${{ steps.version.outputs.version }}"
+          body: |
+            Automated update of nix/package.nix for release ${{ github.event.release.tag_name }}
+            
+            Changes:
+            - Updated version to ${{ steps.version.outputs.version }}
+            - Updated vendorHash to ${{ steps.vendor_hash.outputs.vendor_hash }}
+            
+            This PR was automatically created by the update-nix-package workflow.
+          branch: "nix/update-package-${{ steps.version.outputs.version }}"
+          delete-branch: true
+          labels: |
+            automated
+            nix
