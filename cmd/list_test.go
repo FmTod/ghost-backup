@@ -41,3 +41,35 @@ func TestListCmd_UserFlag(t *testing.T) {
 		t.Errorf("--user flag default value should be empty, got %s", userFlag.DefValue)
 	}
 }
+
+func TestListCmd_BranchFlag(t *testing.T) {
+	// list command should have a visible --branch flag
+	branchFlag := listCmd.Flags().Lookup("branch")
+	if branchFlag == nil {
+		t.Fatal("list command should have a --branch flag")
+	}
+
+	if branchFlag.Hidden {
+		t.Error("--branch flag should be visible (not hidden)")
+	}
+
+	if branchFlag.DefValue != "" {
+		t.Errorf("--branch flag default value should be empty, got %s", branchFlag.DefValue)
+	}
+}
+
+func TestListCmd_AllFlag(t *testing.T) {
+	// list command should have a hidden --all flag
+	allFlag := listCmd.Flags().Lookup("all")
+	if allFlag == nil {
+		t.Fatal("list command should have an --all flag")
+	}
+
+	if allFlag.Hidden != true {
+		t.Error("--all flag should be hidden")
+	}
+
+	if allFlag.DefValue != "false" {
+		t.Errorf("--all flag default value should be false, got %s", allFlag.DefValue)
+	}
+}

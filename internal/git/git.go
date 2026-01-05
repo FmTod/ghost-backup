@@ -275,6 +275,105 @@ func (g *GitRepo) ListAllBackupRefsForUser(remote, userIdentifier string) ([]Bac
 	return parseBackupRefs(string(output)), nil
 }
 
+// ListAllBackupBranches lists all branches that have backups in the remote repository
+func (g *GitRepo) ListAllBackupBranches(remote string) ([]string, error) {
+	// Fetch all refs under refs/backups/*/*
+	// Pattern matches refs/backups/<user>/<branch>
+	cmd := exec.Command("git", "ls-remote", remote, "refs/backups/*/*")
+	cmd.Dir = g.Path
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list backup branches: %w", err)
+	}
+
+	// Parse output and extract unique branch names
+	branchSet := make(map[string]struct{})
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+		parts := strings.Fields(line)
+		if len(parts) >= 2 {
+			// Extract branch name from ref path
+			// Format: refs/backups/<user_identifier>/<branch>
+			ref := parts[1]
+			if strings.HasPrefix(ref, "refs/backups/") {
+				refParts := strings.Split(ref, "/")
+				if len(refParts) >= 4 {
+					branchName := refParts[3]
+					branchSet[branchName] = struct{}{}
+				}
+			}
+		}
+	}
+
+	// Convert set to slice
+	branches := make([]string, 0, len(branchSet))
+	for branch := range branchSet {
+		branches = append(branches, branch)
+	}
+
+	return branches, nil
+}
+
+// ListBackupBranchesForUser lists all branches that have backups for a specific user
+func (g *GitRepo) ListBackupBranchesForUser(remote, userIdentifier string) ([]string, error) {
+	refPattern := fmt.Sprintf("refs/backups/%s/*", SanitizeRefName(userIdentifier))
+
+	// Fetch refs from remote
+	cmd := exec.Command("git", "ls-remote", remote, refPattern)
+	cmd.Dir = g.Path
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list backup branches for user: %w", err)
+	}
+
+	// Parse output and extract unique branch names
+	branchSet := make(map[string]struct{})
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+		parts := strings.Fields(line)
+		if len(parts) >= 2 {
+			// Extract branch name from ref path
+			// Format: refs/backups/<user_identifier>/<branch>
+			ref := parts[1]
+			if strings.HasPrefix(ref, "refs/backups/") {
+				refParts := strings.Split(ref, "/")
+				if len(refParts) >= 4 {
+					branchName := refParts[3]
+					branchSet[branchName] = struct{}{}
+				}
+			}
+		}
+	}
+
+	// Convert set to slice
+	branches := make([]string, 0, len(branchSet))
+	for branch := range branchSet {
+		branches = append(branches, branch)
+	}
+
+	return branches, nil
+}
+
+// ListAllBackupRefs lists all backup references across all users and branches
+func (g *GitRepo) ListAllBackupRefs(remote string) ([]BackupRef, error) {
+	// Fetch all refs under refs/backups/*/*
+	// Pattern matches refs/backups/<user>/<branch>
+	cmd := exec.Command("git", "ls-remote", remote, "refs/backups/*/*")
+	cmd.Dir = g.Path
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list all backup refs: %w", err)
+	}
+
+	return parseBackupRefs(string(output)), nil
+}
+
 // FetchBackupRef fetches a specific backup reference
 func (g *GitRepo) FetchBackupRef(remote, refName string) error {
 	cmd := exec.Command("git", "fetch", remote, fmt.Sprintf("%s:%s", refName, refName))
