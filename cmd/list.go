@@ -15,6 +15,14 @@ var (
 	listAll    bool
 )
 
+// truncateHash safely truncates a git hash to a specified length
+func truncateHash(hash string, maxLen int) string {
+	if len(hash) <= maxLen {
+		return hash
+	}
+	return hash[:maxLen]
+}
+
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List available backups for the current repository",
@@ -141,7 +149,7 @@ func runList(*cobra.Command, []string) error {
 
 	fmt.Printf("Available backups:\n\n")
 	for i, ref := range refs {
-		fmt.Printf("%d. %s\n", i+1, ref.Hash[:12])
+		fmt.Printf("%d. %s\n", i+1, truncateHash(ref.Hash, 12))
 		fmt.Printf("   Full hash: %s\n", ref.Hash)
 		fmt.Printf("   Ref: %s\n\n", ref.Ref)
 	}

@@ -73,3 +73,47 @@ func TestListCmd_AllFlag(t *testing.T) {
 		t.Errorf("--all flag default value should be false, got %s", allFlag.DefValue)
 	}
 }
+
+func TestTruncateHash(t *testing.T) {
+	tests := []struct {
+		name   string
+		hash   string
+		maxLen int
+		want   string
+	}{
+		{
+			name:   "normal git hash",
+			hash:   "abc123def456789012345678901234567890",
+			maxLen: 12,
+			want:   "abc123def456",
+		},
+		{
+			name:   "short hash",
+			hash:   "abc123",
+			maxLen: 12,
+			want:   "abc123",
+		},
+		{
+			name:   "empty hash",
+			hash:   "",
+			maxLen: 12,
+			want:   "",
+		},
+		{
+			name:   "exact length",
+			hash:   "abc123def456",
+			maxLen: 12,
+			want:   "abc123def456",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := truncateHash(tt.hash, tt.maxLen)
+			if got != tt.want {
+				t.Errorf("truncateHash(%q, %d) = %q, want %q", tt.hash, tt.maxLen, got, tt.want)
+			}
+		})
+	}
+}
+
