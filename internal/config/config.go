@@ -256,7 +256,15 @@ func LoadLocalConfig(repoPath string) (*LocalConfig, error) {
 func SaveLocalConfig(repoPath string, config *LocalConfig) error {
 	configPath := GetLocalConfigPath(repoPath)
 
-	data, err := json.MarshalIndent(config, "", "  ")
+	// Create a map to include the $schema field
+	configWithSchema := map[string]interface{}{
+		"$schema":      "https://raw.githubusercontent.com/FmTod/ghost-backup/main/config.schema.json",
+		"interval":     config.Interval,
+		"scan_secrets": config.ScanSecrets,
+		"only_staged":  config.OnlyStaged,
+	}
+
+	data, err := json.MarshalIndent(configWithSchema, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal local config: %w", err)
 	}

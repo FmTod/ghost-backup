@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/FmTod/ghost-backup/blob/main/.ghost-backup.schema.json",
+  "title": "Ghost Backup Configuration",
+  "description": "Configuration file for ghost-backup per-repository settings",
+  "type": "object",
+  "properties": {
+    "interval": {
+      "type": "integer",
+      "description": "Backup interval in minutes",
+      "default": 60,
+      "minimum": 1
+    },
+    "scan_secrets": {
+      "type": "boolean",
+      "description": "Whether to scan for secrets using gitleaks before backing up",
+      "default": true
+    },
+    "only_staged": {
+      "type": "boolean",
+      "description": "Whether to backup only staged changes (exclude unstaged changes)",
+      "default": false
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "interval": 60,
+      "scan_secrets": true,
+      "only_staged": false
+    },
+    {
+      "interval": 30,
+      "scan_secrets": false,
+      "only_staged": true
+    }
+  ]
+}
