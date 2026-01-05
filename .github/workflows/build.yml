@@ -1,6 +1,8 @@
 name: "📦 Build"
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       run-tests:
@@ -59,7 +61,7 @@ jobs:
   build:
     name: "🏗️ Build Binary"
     if: always() && (needs.test.result == 'success' || needs.test.result == 'skipped') && (needs.security.result == 'success' || needs.security.result == 'skipped')
-    uses: ./.github/workflows/_build-binary.yml
+    uses: ./.github/workflows/_binary.yml
     needs: [prepare, test, security]
     with:
       go-version: '1.25'
