@@ -17,6 +17,7 @@ var (
 	initPath        string
 	initInterval    int
 	initScanSecrets bool
+	initOnlyStaged  bool
 )
 
 var initCmd = &cobra.Command{
@@ -35,6 +36,7 @@ func init() {
 	initCmd.Flags().StringVarP(&initPath, "path", "p", ".", "Path to the repository")
 	initCmd.Flags().IntVarP(&initInterval, "interval", "i", config.DefaultInterval, "Backup interval in minutes")
 	initCmd.Flags().BoolVarP(&initScanSecrets, "scan-secrets", "s", config.DefaultScanSecrets, "Enable secret scanning with gitleaks")
+	initCmd.Flags().BoolVarP(&initOnlyStaged, "only-staged", "o", config.DefaultOnlyStaged, "Backup only staged changes (exclude unstaged)")
 }
 
 func runInit(*cobra.Command, []string) error {
@@ -60,6 +62,7 @@ func runInit(*cobra.Command, []string) error {
 	localConfig := &config.LocalConfig{
 		Interval:    initInterval,
 		ScanSecrets: initScanSecrets,
+		OnlyStaged:  initOnlyStaged,
 	}
 
 	if err := config.SaveLocalConfig(absPath, localConfig); err != nil {
@@ -69,6 +72,7 @@ func runInit(*cobra.Command, []string) error {
 	fmt.Printf("✓ Created local config: .ghost-backup.json\n")
 	fmt.Printf("  - Interval: %d minutes\n", initInterval)
 	fmt.Printf("  - Scan secrets: %v\n", initScanSecrets)
+	fmt.Printf("  - Only staged: %v\n", initOnlyStaged)
 
 	// Load registry
 	registry, err := config.LoadRegistry()

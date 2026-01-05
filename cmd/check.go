@@ -106,6 +106,7 @@ func runCheck(cmd *cobra.Command, args []string) error {
 			fmt.Printf("   [PASS] Configuration is valid\n")
 			fmt.Printf("     - Interval: %d minutes\n", cfg.Interval)
 			fmt.Printf("     - Scan secrets: %v\n", cfg.ScanSecrets)
+			fmt.Printf("     - Only staged: %v\n", cfg.OnlyStaged)
 		}
 	}
 

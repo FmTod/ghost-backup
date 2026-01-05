@@ -24,11 +24,13 @@ type GlobalConfig struct {
 type LocalConfig struct {
 	Interval    int  `json:"interval"`     // Backup interval in minutes
 	ScanSecrets bool `json:"scan_secrets"` // Whether to scan for secrets using gitleaks
+	OnlyStaged  bool `json:"only_staged"`  // Whether to backup only staged changes
 }
 
 const (
 	DefaultInterval    = 60
 	DefaultScanSecrets = true
+	DefaultOnlyStaged  = false
 )
 
 // GetConfigDir returns the global config directory path
@@ -230,6 +232,7 @@ func LoadLocalConfig(repoPath string) (*LocalConfig, error) {
 	config := &LocalConfig{
 		Interval:    DefaultInterval,
 		ScanSecrets: DefaultScanSecrets,
+		OnlyStaged:  DefaultOnlyStaged,
 	}
 
 	// If a config file doesn't exist, return default

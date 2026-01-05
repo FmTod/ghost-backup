@@ -132,8 +132,8 @@ func (w *Worker) checkConfigReload() {
 			return
 		}
 
-		w.logger.Printf("[%s] Config reloaded: interval=%dm, scan_secrets=%v\n",
-			w.repoPath, cfg.Interval, cfg.ScanSecrets)
+		w.logger.Printf("[%s] Config reloaded: interval=%dm, scan_secrets=%v, only_staged=%v\n",
+			w.repoPath, cfg.Interval, cfg.ScanSecrets, cfg.OnlyStaged)
 		w.updateTicker(time.Duration(cfg.Interval) * time.Minute)
 	}
 }
@@ -194,7 +194,7 @@ func (w *Worker) performBackup() {
 	}
 
 	// Create stash
-	hash, err := repo.CreateStash()
+	hash, err := repo.CreateStash(cfg.OnlyStaged)
 	if err != nil {
 		w.logger.Printf("[%s] Failed to create stash: %v\n", w.repoPath, err)
 		return

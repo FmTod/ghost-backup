@@ -134,9 +134,17 @@ func (g *GitRepo) HasChanges() (bool, error) {
 }
 
 // CreateStash creates a stash and returns the hash
-func (g *GitRepo) CreateStash() (string, error) {
+// If onlyStaged is true, only staged changes will be stashed
+func (g *GitRepo) CreateStash(onlyStaged bool) (string, error) {
 	// Use 'git stash create' which creates a stash without modifying the working directory
-	cmd := exec.Command("git", "stash", "create")
+	var cmd *exec.Cmd
+	if onlyStaged {
+		// Stash only staged changes using --staged flag (Git 2.35+)
+		cmd = exec.Command("git", "stash", "create", "--staged")
+	} else {
+		// Stash all changes (staged and unstaged)
+		cmd = exec.Command("git", "stash", "create")
+	}
 	cmd.Dir = g.Path
 	output, err := cmd.Output()
 	if err != nil {

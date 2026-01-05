@@ -54,6 +54,7 @@ func runBackup(*cobra.Command, []string) error {
 		localConfig = &config.LocalConfig{
 			Interval:    config.DefaultInterval,
 			ScanSecrets: config.DefaultScanSecrets,
+			OnlyStaged:  config.DefaultOnlyStaged,
 		}
 	}
 
@@ -71,7 +72,7 @@ func runBackup(*cobra.Command, []string) error {
 	fmt.Println("Found uncommitted changes, creating backup...")
 
 	// Create stash
-	hash, err := repo.CreateStash()
+	hash, err := repo.CreateStash(localConfig.OnlyStaged)
 	if err != nil {
 		return fmt.Errorf("failed to create stash: %w", err)
 	}

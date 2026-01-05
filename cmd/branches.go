@@ -41,7 +41,11 @@ func runBranches(*cobra.Command, []string) error {
 	repo := git.NewGitRepo(cwd)
 
 	// Verify it's a git repository
-	if !repo.IsGitRepo() {
+	isGitRepo, err := repo.IsGitRepo()
+	if err != nil {
+		return fmt.Errorf("git validation error: %w", err)
+	}
+	if !isGitRepo {
 		return fmt.Errorf("not a git repository: %s", cwd)
 	}
 
