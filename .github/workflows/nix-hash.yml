@@ -2,6 +2,9 @@ name: "📦 Update Nix Package"
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - "release-please--**"
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
@@ -16,13 +19,13 @@ jobs:
     name: "Update nix/package.nix vendorHash"
     runs-on: ubuntu-latest
     # Only run on release-please PRs
-    if: startsWith(github.head_ref, 'release-please--')
+    if: startsWith(github.head_ref || github.ref_name, 'release-please--')
 
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
