@@ -2,7 +2,7 @@
 
 pkgs.buildGoModule {
   pname = "ghost-backup";
-  version = "0.1.8"; # x-release-please-version
+  version = "0.3.0"; # x-release-please-version
 
   src = ../.;
 

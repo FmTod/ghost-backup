@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/FmTod/ghost-backup/compare/v0.2.0...v0.3.0) (2026-01-05)
+
+
+### Features
+
+* configure release-please to update package.json and nix/package.nix versions ([#9](https://github.com/FmTod/ghost-backup/issues/9)) ([4f639dd](https://github.com/FmTod/ghost-backup/commit/4f639dd4d25909a93bab31280beb21e2b901792a))
+
+
+### Bug Fixes
+
+* update conditions for triggering Nix package update workflow ([56de38f](https://github.com/FmTod/ghost-backup/commit/56de38ff7de6c0fd6e5a747dffd48e4a3ac1b244))
+
 ## 0.2.0 (2026-01-05)
 
 
