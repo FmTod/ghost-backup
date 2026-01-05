@@ -8,6 +8,19 @@ import (
 	"strings"
 )
 
+// Backup ref path structure constants
+// Backup refs follow the format: refs/backups/<user>/<branch>
+const (
+	// userIdentifierIndex is the index of the user identifier in a backup ref path
+	userIdentifierIndex = 2
+	// branchNameIndex is the index of the branch name in a backup ref path
+	branchNameIndex = 3
+	// minRefPartsForUser is the minimum number of parts needed to extract user identifier
+	minRefPartsForUser = 3
+	// minRefPartsForBranch is the minimum number of parts needed to extract branch name
+	minRefPartsForBranch = 4
+)
+
 // GitRepo represents a git repository
 //
 //goland:noinspection GoNameStartsWithPackageName
@@ -220,10 +233,6 @@ func (g *GitRepo) ListBackupRefs(remote, userIdentifier, branch string) ([]Backu
 
 // ListAllBackupUsers lists all users who have backups in the remote repository
 func (g *GitRepo) ListAllBackupUsers(remote string) ([]string, error) {
-	// The user identifier is at index 2 in the ref path: refs/backups/<user>/<branch>
-	const userIdentifierIndex = 2
-	const minRefPartsLength = 3
-
 	// Fetch all refs under refs/backups/*/*
 	// Pattern matches refs/backups/<user>/<branch>
 	cmd := exec.Command("git", "ls-remote", remote, "refs/backups/*/*")
@@ -247,7 +256,7 @@ func (g *GitRepo) ListAllBackupUsers(remote string) ([]string, error) {
 			ref := parts[1]
 			if strings.HasPrefix(ref, "refs/backups/") {
 				refParts := strings.Split(ref, "/")
-				if len(refParts) >= minRefPartsLength {
+				if len(refParts) >= minRefPartsForUser {
 					userIdentifier := refParts[userIdentifierIndex]
 					userSet[userIdentifier] = struct{}{}
 				}
@@ -282,10 +291,6 @@ func (g *GitRepo) ListAllBackupRefsForUser(remote, userIdentifier string) ([]Bac
 // extractBranchNamesFromRefs parses git ls-remote output and extracts unique branch names
 // from backup refs with format refs/backups/<user>/<branch>
 func extractBranchNamesFromRefs(output string) []string {
-	// The branch name is at index 3 in the ref path: refs/backups/<user>/<branch>
-	const branchNameIndex = 3
-	const minRefPartsLength = 4
-
 	branchSet := make(map[string]struct{})
 	lines := strings.Split(strings.TrimSpace(output), "\n")
 	for _, line := range lines {
@@ -299,7 +304,7 @@ func extractBranchNamesFromRefs(output string) []string {
 			ref := parts[1]
 			if strings.HasPrefix(ref, "refs/backups/") {
 				refParts := strings.Split(ref, "/")
-				if len(refParts) >= minRefPartsLength {
+				if len(refParts) >= minRefPartsForBranch {
 					branchName := refParts[branchNameIndex]
 					branchSet[branchName] = struct{}{}
 				}
