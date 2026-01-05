@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/FmTod/ghost-backup/compare/v0.4.0...v0.4.1) (2026-01-05)
+
+
+### Miscellaneous Chores
+
+* release 0.4.1 ([e3f40aa](https://github.com/FmTod/ghost-backup/commit/e3f40aa0d578778ab838822d417c9ce2a81b414c))
+
 ## [0.4.0](https://github.com/FmTod/ghost-backup/compare/v0.3.0...v0.4.0) (2026-01-05)
 
 
