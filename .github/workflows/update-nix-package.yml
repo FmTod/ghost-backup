@@ -54,9 +54,23 @@ jobs:
           echo "$BUILD_OUTPUT"
 
           # Extract the expected hash from the error message
-          # Nix error messages show "got: sha256-..." when hash mismatches
+          # Try multiple patterns to handle different Nix versions
           EXPECTED_HASH=$(echo "$BUILD_OUTPUT" | \
             grep -oP "got:\s+\K(sha256-[A-Za-z0-9+/=]+)" | head -1)
+
+          # Fallback pattern: "specified: ... got: ..."
+          if [ -z "$EXPECTED_HASH" ]; then
+            EXPECTED_HASH=$(echo "$BUILD_OUTPUT" | \
+              grep -oP "specified:.*got:\s+\K(sha256-[A-Za-z0-9+/=]+)" | \
+              head -1)
+          fi
+
+          # Fallback pattern: extract any sha256 hash from output
+          if [ -z "$EXPECTED_HASH" ]; then
+            EXPECTED_HASH=$(echo "$BUILD_OUTPUT" | \
+              grep -oP "sha256-[A-Za-z0-9+/=]+" | grep -v "${FAKE_HASH}" | \
+              head -1)
+          fi
 
           if [ -z "$EXPECTED_HASH" ]; then
             echo "Failed to extract vendor hash from build output"
