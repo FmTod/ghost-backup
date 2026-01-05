@@ -76,7 +76,11 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	// Check 1: Git repository
 	fmt.Printf("[*] Checking git repository...\n")
 	repo := git.NewGitRepo(absPath)
-	if !repo.IsGitRepo() {
+	isGitRepo, err := repo.IsGitRepo()
+	if err != nil {
+		fmt.Printf("   [FAIL] Git validation error: %v\n", err)
+		hasErrors = true
+	} else if !isGitRepo {
 		fmt.Printf("   [FAIL] Not a valid git repository\n")
 		hasErrors = true
 	} else {
@@ -130,7 +134,8 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	}
 
 	// Check 4: Git configuration
-	if repo.IsGitRepo() {
+	isGitRepo2, _ := repo.IsGitRepo()
+	if isGitRepo2 {
 		fmt.Printf("\n[*] Checking git configuration...\n")
 
 		// Check user email

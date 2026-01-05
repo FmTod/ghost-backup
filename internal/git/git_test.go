@@ -52,13 +52,21 @@ func TestGitRepo_IsGitRepo(t *testing.T) {
 	tmpDir := setupTestRepo(t)
 	repo := NewGitRepo(tmpDir)
 
-	if !repo.IsGitRepo() {
+	isGitRepo, err := repo.IsGitRepo()
+	if err != nil {
+		t.Errorf("IsGitRepo() error = %v", err)
+	}
+	if !isGitRepo {
 		t.Error("IsGitRepo() = false for valid git repo")
 	}
 
 	// Test invalid path
 	repo = NewGitRepo("/nonexistent/path")
-	if repo.IsGitRepo() {
+	isGitRepo, err = repo.IsGitRepo()
+	if err == nil {
+		t.Error("IsGitRepo() expected error for invalid path, got nil")
+	}
+	if isGitRepo {
 		t.Error("IsGitRepo() = true for invalid path")
 	}
 }

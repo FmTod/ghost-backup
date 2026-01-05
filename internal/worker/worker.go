@@ -171,7 +171,12 @@ func (w *Worker) performBackup() {
 	repo := git.NewGitRepo(w.repoPath)
 
 	// Verify it's a git repo
-	if !repo.IsGitRepo() {
+	isGitRepo, err := repo.IsGitRepo()
+	if err != nil {
+		w.logger.Printf("[%s] Git validation error: %v\n", w.repoPath, err)
+		return
+	}
+	if !isGitRepo {
 		w.logger.Printf("[%s] Not a valid git repository\n", w.repoPath)
 		return
 	}

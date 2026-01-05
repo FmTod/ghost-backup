@@ -51,7 +51,11 @@ func TestGitRepo_WorktreeSupport(t *testing.T) {
 	repo := NewGitRepo(worktreePath)
 
 	// Test IsGitRepo
-	if !repo.IsGitRepo() {
+	isGitRepo, err := repo.IsGitRepo()
+	if err != nil {
+		t.Errorf("IsGitRepo() error = %v", err)
+	}
+	if !isGitRepo {
 		t.Error("IsGitRepo() = false for worktree, expected true")
 	}
 

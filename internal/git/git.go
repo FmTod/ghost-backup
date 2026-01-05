@@ -66,11 +66,26 @@ func (g *GitRepo) execGitCommand(args ...string) *exec.Cmd {
 }
 
 // IsGitRepo checks if the path is a valid git repository
-func (g *GitRepo) IsGitRepo() bool {
+func (g *GitRepo) IsGitRepo() (bool, error) {
 	cmd := exec.Command("git", "rev-parse", "--git-dir")
 	cmd.Dir = g.Path
+	
+	// Check if directory exists first
+	if _, err := os.Stat(g.Path); err != nil {
+		return false, fmt.Errorf("path does not exist or is not accessible: %w", err)
+	}
+	
+	// Capture both stdout and stderr for debugging
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	
 	err := cmd.Run()
-	return err == nil
+	if err != nil {
+		return false, fmt.Errorf("git command failed: %w (stdout: %s, stderr: %s)", err, stdout.String(), stderr.String())
+	}
+	
+	return true, nil
 }
 
 // GetUserEmail retrieves the user's git email
@@ -183,9 +198,9 @@ func (g *GitRepo) PushToBackupRef(hash, userIdentifier, branch, remote string) e
 	// Create ref name: refs/backups/<user_identifier>/<branch_name>
 	refName := fmt.Sprintf("refs/backups/%s/%s", SanitizeRefName(userIdentifier), SanitizeRefName(branch))
 
-	// Push the hash to the remote ref
-	// Format: git push <remote> <hash>:<ref>
-	cmd := g.execGitCommand("push", remote, fmt.Sprintf("%s:%s", hash, refName))
+	// Push the hash to the remote ref with --force since each stash is independent
+	// Format: git push --force <remote> <hash>:<ref>
+	cmd := g.execGitCommand("push", "--force", remote, fmt.Sprintf("%s:%s", hash, refName))
 
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
