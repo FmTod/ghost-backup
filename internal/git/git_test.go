@@ -181,7 +181,7 @@ func TestGitRepo_CreateStash(t *testing.T) {
 	}
 
 	// Create stash
-	hash, err := repo.CreateStash()
+	hash, err := repo.CreateStash(false)
 	if err != nil {
 		t.Fatalf("CreateStash() error = %v", err)
 	}

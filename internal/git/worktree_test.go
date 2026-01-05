@@ -113,7 +113,7 @@ func TestGitRepo_WorktreeCreateStash(t *testing.T) {
 
 	// Test CreateStash in worktree
 	repo := NewGitRepo(worktreePath)
-	hash, err := repo.CreateStash()
+	hash, err := repo.CreateStash(false)
 	if err != nil {
 		t.Fatalf("CreateStash() error in worktree = %v", err)
 	}
