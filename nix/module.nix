@@ -29,6 +29,11 @@ in
       after = [ "network.target" ];
       wantedBy = [ "default.target" ];
 
+      path = with pkgs; [
+        git
+        gitleaks
+      ];
+
       serviceConfig = {
         Type = "simple";
         ExecStart = "${lib.getExe cfg.package} service run";
