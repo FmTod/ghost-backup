@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/FmTod/ghost-backup/compare/v0.4.2...v0.4.3) (2026-01-06)
+
+
+### Bug Fixes
+
+* **nix:** add bash and coreutils to ghost-backup service path ([a0fe283](https://github.com/FmTod/ghost-backup/commit/a0fe283643fa7cf68ed6bb085d7de0e2665b9175))
+
 ## [0.4.2](https://github.com/FmTod/ghost-backup/compare/v0.4.1...v0.4.2) (2026-01-06)
 
 
