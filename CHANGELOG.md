@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.2](https://github.com/FmTod/ghost-backup/compare/v0.4.1...v0.4.2) (2026-01-06)
+
+
+### Bug Fixes
+
+* **nix:** add missing path configuration for ghost-backup service ([b9d46f8](https://github.com/FmTod/ghost-backup/commit/b9d46f8c2728e4ac0cbc91b067df481e191dd4f6))
+* **nix:** update nixpkgs locked version and hash in flake.lock ([5cdd354](https://github.com/FmTod/ghost-backup/commit/5cdd3544b7555cb18fe524182556bd1ba9a0a491))
+
 ## [0.4.1](https://github.com/FmTod/ghost-backup/compare/v0.4.0...v0.4.1) (2026-01-05)
 
 
