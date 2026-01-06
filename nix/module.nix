@@ -32,6 +32,8 @@ in
       path = with pkgs; [
         git
         gitleaks
+        bash
+        coreutils
       ];
 
       serviceConfig = {
