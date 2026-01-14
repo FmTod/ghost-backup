@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.5](https://github.com/FmTod/ghost-backup/compare/v0.4.4...v0.4.5) (2026-01-14)
+
+
+### Bug Fixes
+
+* enhance installation logging for updates and successful installs ([7620ec8](https://github.com/FmTod/ghost-backup/commit/7620ec8bfe1dd8538f05396fdd94cdc97ac8c1bc))
+* set version via ldflags in build process and update command version reference ([4f55672](https://github.com/FmTod/ghost-backup/commit/4f5567242b3fb9e2df04998e3245eefebaa7f76c))
+
 ## [0.4.4](https://github.com/FmTod/ghost-backup/compare/v0.4.3...v0.4.4) (2026-01-14)
 
 
