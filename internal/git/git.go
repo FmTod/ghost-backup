@@ -204,7 +204,8 @@ func (g *GitRepo) GetFilesChanged(hash string) (string, error) {
 // PushToBackupRef pushes a hash to a backup reference
 func (g *GitRepo) PushToBackupRef(hash, userIdentifier, branch, remote string) error {
 	// Create ref name: refs/backups/<user_identifier>/<branch_name>
-	refName := fmt.Sprintf("refs/backups/%s/%s", SanitizeRefName(userIdentifier), SanitizeRefName(branch))
+	// Branch name is not sanitized to preserve slashes in branch paths
+	refName := fmt.Sprintf("refs/backups/%s/%s", SanitizeRefName(userIdentifier), branch)
 
 	// Push the hash to the remote ref with --force since each stash is independent
 	// Format: git push --force <remote> <hash>:<ref>
@@ -241,7 +242,8 @@ func parseBackupRefs(output string) []BackupRef {
 
 // ListBackupRefs lists all backup references for the current user and branch
 func (g *GitRepo) ListBackupRefs(remote, userIdentifier, branch string) ([]BackupRef, error) {
-	refPattern := fmt.Sprintf("refs/backups/%s/%s", SanitizeRefName(userIdentifier), SanitizeRefName(branch))
+	// Branch name is not sanitized to preserve slashes in branch paths
+	refPattern := fmt.Sprintf("refs/backups/%s/%s", SanitizeRefName(userIdentifier), branch)
 
 	// Fetch refs from remote
 	cmd := exec.Command("git", "ls-remote", remote, refPattern)
@@ -324,11 +326,12 @@ func extractBranchNamesFromRefs(output string) []string {
 		if len(parts) >= 2 {
 			// Extract branch name from ref path
 			// Format: refs/backups/<user_identifier>/<branch>
+			// Branch may contain slashes, so join all parts from index 3 onwards
 			ref := parts[1]
 			if strings.HasPrefix(ref, "refs/backups/") {
 				refParts := strings.Split(ref, "/")
 				if len(refParts) >= minRefPartsForBranch {
-					branchName := refParts[branchNameIndex]
+					branchName := strings.Join(refParts[branchNameIndex:], "/")
 					branchSet[branchName] = struct{}{}
 				}
 			}

@@ -95,7 +95,8 @@ func runInspect(_ *cobra.Command, args []string) error {
 	// Check if the object exists locally, fetch if not
 	if !repo.ObjectExists(hash) {
 		// Fetch the backup ref to ensure we have the object
-		refName := fmt.Sprintf("refs/backups/%s/%s", git.SanitizeRefName(userIdentifier), git.SanitizeRefName(branch))
+		// Branch name is not sanitized to preserve slashes in branch paths
+		refName := fmt.Sprintf("refs/backups/%s/%s", git.SanitizeRefName(userIdentifier), branch)
 		fmt.Printf("Fetching backup from %s...\n", refName)
 
 		if err := repo.FetchBackupRef(remote, refName); err != nil {

@@ -351,3 +351,62 @@ func TestGitRepo_CherryPick_InvalidHash(t *testing.T) {
 		t.Error("CherryPick() should return error for invalid hash")
 	}
 }
+
+func TestExtractBranchNamesFromRefs(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected []string
+	}{
+		{
+			name:     "simple branch names",
+			input:    "abc123\trefs/backups/user/main\ndef456\trefs/backups/user/develop",
+			expected: []string{"main", "develop"},
+		},
+		{
+			name:     "branch names with slashes",
+			input:    "abc123\trefs/backups/viicslen/refactor/promotions-form-store\ndef456\trefs/backups/viicslen/feature/new-ui",
+			expected: []string{"refactor/promotions-form-store", "feature/new-ui"},
+		},
+		{
+			name:     "mixed branch names",
+			input:    "abc123\trefs/backups/user/main\ndef456\trefs/backups/user/feature/branch-1\nghi789\trefs/backups/user/hotfix/bug-fix",
+			expected: []string{"main", "feature/branch-1", "hotfix/bug-fix"},
+		},
+		{
+			name:     "deeply nested branch names",
+			input:    "abc123\trefs/backups/user/team/feature/sub/deep-branch",
+			expected: []string{"team/feature/sub/deep-branch"},
+		},
+		{
+			name:     "empty input",
+			input:    "",
+			expected: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := extractBranchNamesFromRefs(tt.input)
+			
+			// Sort both slices for comparison
+			if len(result) != len(tt.expected) {
+				t.Errorf("extractBranchNamesFromRefs() returned %d branches, want %d", len(result), len(tt.expected))
+				t.Errorf("Got: %v, Want: %v", result, tt.expected)
+				return
+			}
+
+			// Convert to map for easy comparison
+			resultMap := make(map[string]bool)
+			for _, r := range result {
+				resultMap[r] = true
+			}
+
+			for _, exp := range tt.expected {
+				if !resultMap[exp] {
+					t.Errorf("extractBranchNamesFromRefs() missing expected branch %q. Got: %v", exp, result)
+				}
+			}
+		})
+	}
+}
