@@ -146,7 +146,13 @@ install_binary() {
         install_path="${install_path}.exe"
     fi
 
-    log_info "Installing to $install_path..."
+    # Check if updating existing installation
+    if [ -f "$install_path" ]; then
+        local current_version=$("$install_path" --version 2>&1 | grep -oE 'version [^ ]+' | cut -d' ' -f2 || echo "unknown")
+        log_info "Updating from version $current_version to $version..."
+    else
+        log_info "Installing to $install_path..."
+    fi
 
     if ! mv "$temp_file" "$install_path" 2>/dev/null; then
         log_warn "Installation requires elevated privileges."
@@ -163,7 +169,7 @@ install_binary() {
         fi
     fi
 
-    log_info "Successfully installed ${BINARY_NAME} to $install_path"
+    log_info "✓ Successfully installed ${BINARY_NAME} to $install_path"
 }
 
 # Verify installation
