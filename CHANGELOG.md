@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.6](https://github.com/FmTod/ghost-backup/compare/v0.4.5...v0.4.6) (2026-01-14)
+
+
+### Bug Fixes
+
+* add systemd user service template and testing scripts ([9cd50a5](https://github.com/FmTod/ghost-backup/commit/9cd50a50b9ecbf447b527667552e39da3021d130))
+* add WantedBy option for user service in service configuration ([d149ac4](https://github.com/FmTod/ghost-backup/commit/d149ac40a90738d2c96a3d1872c7e45e9493e989))
+
 ## [0.4.5](https://github.com/FmTod/ghost-backup/compare/v0.4.4...v0.4.5) (2026-01-14)
 
 
