@@ -127,8 +127,8 @@ func NewService() (service.Service, error) {
 		DisplayName: "Ghost Backup Service",
 		Description: "Automated git backup service that monitors multiple repositories",
 		Option: service.KeyValue{
-			"UserService": true,
-			"WantedBy":    "default.target",
+			"UserService":   true,
+			"SystemdScript": systemdUserTemplate,
 		},
 	}
 
@@ -147,6 +147,32 @@ func NewService() (service.Service, error) {
 
 	return s, nil
 }
+
+// systemdUserTemplate is a custom systemd unit template for user services
+const systemdUserTemplate = `[Unit]
+Description={{.Description}}
+ConditionFileIsExecutable={{.Path|cmdEscape}}
+After=default.target
+
+[Service]
+StartLimitInterval=5
+StartLimitBurst=10
+ExecStart={{.Path|cmdEscape}}{{range .Arguments}} {{.|cmd}}{{end}}
+Restart=always
+RestartSec=120
+{{if .ChRoot}}RootDirectory={{.ChRoot|cmd}}{{end}}
+{{if .WorkingDirectory}}WorkingDirectory={{.WorkingDirectory|cmdEscape}}{{end}}
+{{if .UserName}}User={{.UserName}}{{end}}
+{{if .ReloadSignal}}ExecReload=/bin/kill -{{.ReloadSignal}} "$MAINPID"{{end}}
+{{if .PIDFile}}PIDFile={{.PIDFile|cmd}}{{end}}
+{{range $i, $dep := .Dependencies}}
+{{$dep}} {{end}}
+{{if .EnvVars}}{{range $i, $var := .EnvVars}}Environment={{$var}}
+{{end}}{{end}}
+
+[Install]
+WantedBy=default.target
+`
 
 // InstallService installs the user service
 func InstallService() error {

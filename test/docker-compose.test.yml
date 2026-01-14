@@ -1,0 +1,21 @@
+services:
+  ghost-backup-test:
+    build:
+      context: ..
+      dockerfile: test/Dockerfile.test
+    container_name: ghost-backup-systemd-test
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup
+      - ghost-backup-data:/home/testuser
+    tmpfs:
+      - /tmp
+      - /run
+      - /run/lock
+    environment:
+      - container=docker
+    stdin_open: true
+    tty: true
+
+volumes:
+  ghost-backup-data:
