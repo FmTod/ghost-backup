@@ -127,7 +127,8 @@ func NewService() (service.Service, error) {
 		DisplayName: "Ghost Backup Service",
 		Description: "Automated git backup service that monitors multiple repositories",
 		Option: service.KeyValue{
-			"UserService": true, // Run as user service instead of system service
+			"UserService": true,
+			"WantedBy":    "default.target",
 		},
 	}
 
