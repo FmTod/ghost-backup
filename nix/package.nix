@@ -21,7 +21,7 @@ pkgs.buildGoModule {
   ldflags = [
     "-s"
     "-w"
-    "-X main.version=${self.rev or "dev"}"
+    "-X github.com/FmTod/ghost-backup/cmd.version=${self.rev or "dev"}"
   ];
 
   meta = with pkgs.lib; {

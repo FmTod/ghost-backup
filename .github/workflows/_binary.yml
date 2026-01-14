@@ -57,7 +57,8 @@ jobs:
           if [ "${{ steps.platform.outputs.goos }}" = "windows" ]; then
             binary_name="${binary_name}.exe"
           fi
-          go build -ldflags="-w -s" -o "dist/${binary_name}" .
+          version="${{ inputs.release-tag || 'dev' }}"
+          go build -ldflags="-w -s -X github.com/FmTod/ghost-backup/cmd.version=${version}" -o "dist/${binary_name}" .
 
       - name: Upload artifacts
         if: ${{ inputs.upload-artifacts && inputs.release-tag == '' }}
