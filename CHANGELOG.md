@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.4](https://github.com/FmTod/ghost-backup/compare/v0.4.3...v0.4.4) (2026-01-14)
+
+
+### Bug Fixes
+
+* preserve slashes in branch names for backup refs ([ca9120a](https://github.com/FmTod/ghost-backup/commit/ca9120abd53090f6551d6e3664c37257ce2c7ae4))
+
 ## [0.4.3](https://github.com/FmTod/ghost-backup/compare/v0.4.2...v0.4.3) (2026-01-06)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "ghost-backup",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "devDependencies": {
     "@commitlint/cli": "^20.3.0",
     "@commitlint/config-conventional": "^20.3.0",
