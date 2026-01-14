@@ -72,15 +72,9 @@ func (p *Program) Start(service.Service) error {
 
 	_ = p.logger.Infof("Service started with %d workers", p.manager.GetWorkerCount())
 
-	go p.run()
+	// The kardianos/service library keeps the process alive
+	// Workers run in their own goroutines, no need to block here
 	return nil
-}
-
-// run is the main service loop
-func (p *Program) run() {
-	// The workers run in their own goroutines
-	// This method just needs to keep running
-	select {}
 }
 
 // Stop is called when the service stops
