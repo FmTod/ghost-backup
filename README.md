@@ -21,7 +21,29 @@ A production-ready, multi-platform CLI tool that provides automated git backup f
 - Git installed and configured
 - (Optional) [gitleaks](https://github.com/gitleaks/gitleaks) for secret scanning
 
-### Using Nix (Recommended)
+### Quick Install (Linux/macOS/WSL)
+
+Install the latest release with a single command:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/FmTod/ghost-backup/main/install.sh | bash
+```
+
+This script will:
+
+- Detect your operating system and architecture
+- Download the appropriate binary from the latest GitHub release
+- Install it to `/usr/local/bin/ghost-backup`
+- Verify the installation
+
+To install to a custom location:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/FmTod/ghost-backup/main/install.sh | bash -s -- --prefix ~/.local
+```
+
+<details>
+<summary><h3>Using Nix</h3></summary>
 
 #### Run without installing
 
@@ -62,6 +84,7 @@ Add to your NixOS configuration:
 This configures a systemd user service that runs as your user account.
 
 Manage the service with:
+
 ```bash
 # Check status
 systemctl --user status ghost-backup
@@ -88,31 +111,15 @@ cd ghost-backup
 nix develop
 ```
 
-### Quick Install (Linux/macOS)
+</details>
 
-Install the latest release with a single command:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/FmTod/ghost-backup/main/install.sh | bash
-```
-
-This script will:
-- Detect your operating system and architecture
-- Download the appropriate binary from the latest GitHub release
-- Install it to `/usr/local/bin/ghost-backup`
-- Verify the installation
-
-To install to a custom location:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/FmTod/ghost-backup/main/install.sh | bash -s -- --prefix ~/.local
-```
-
-#### Manual Installation
+<details>
+<summary><h3>Manual Installation</h3></summary>
 
 1. Download the latest release for your platform from the [releases page](https://github.com/FmTod/ghost-backup/releases/latest):
 
    **Linux (amd64)**:
+
    ```bash
    curl -L -o ghost-backup https://github.com/FmTod/ghost-backup/releases/latest/download/ghost-backup-linux-amd64
    chmod +x ghost-backup
@@ -120,6 +127,7 @@ curl -fsSL https://raw.githubusercontent.com/FmTod/ghost-backup/main/install.sh 
    ```
 
    **Linux (arm64)**:
+
    ```bash
    curl -L -o ghost-backup https://github.com/FmTod/ghost-backup/releases/latest/download/ghost-backup-linux-arm64
    chmod +x ghost-backup
@@ -127,6 +135,7 @@ curl -fsSL https://raw.githubusercontent.com/FmTod/ghost-backup/main/install.sh 
    ```
 
    **macOS (Intel)**:
+
    ```bash
    curl -L -o ghost-backup https://github.com/FmTod/ghost-backup/releases/latest/download/ghost-backup-darwin-amd64
    chmod +x ghost-backup
@@ -134,6 +143,7 @@ curl -fsSL https://raw.githubusercontent.com/FmTod/ghost-backup/main/install.sh 
    ```
 
    **macOS (Apple Silicon)**:
+
    ```bash
    curl -L -o ghost-backup https://github.com/FmTod/ghost-backup/releases/latest/download/ghost-backup-darwin-arm64
    chmod +x ghost-backup
@@ -141,7 +151,6 @@ curl -fsSL https://raw.githubusercontent.com/FmTod/ghost-backup/main/install.sh 
    ```
 
    **Windows**:
-   
    Download [ghost-backup-windows-amd64.exe](https://github.com/FmTod/ghost-backup/releases/latest/download/ghost-backup-windows-amd64.exe) and add it to your PATH.
 
 2. Verify the installation:
@@ -149,6 +158,8 @@ curl -fsSL https://raw.githubusercontent.com/FmTod/ghost-backup/main/install.sh 
    ```bash
    ghost-backup --version
    ```
+
+</details>
 
 ### Building from Source
 
@@ -171,6 +182,7 @@ ghost-backup init
 ```
 
 This will:
+
 - Create `.ghost-backup.json` with default settings
 - Add the repository to the global registry
 - Install and start the user service
@@ -184,6 +196,7 @@ ghost-backup init --interval 5 --scan-secrets=false
 ```
 
 Options:
+
 - `--path, -p`: Path to the repository (default: current directory)
 - `--interval, -i`: Backup interval in minutes (default: 60)
 - `--scan-secrets, -s`: Enable secret scanning with gitleaks (default: true)
@@ -221,6 +234,7 @@ ghost-backup backup
 ```
 
 This will:
+
 - Check for uncommitted changes
 - Create a stash if changes exist
 - Scan for secrets (if enabled)
@@ -248,6 +262,7 @@ ghost-backup workflow --cron "0 2 * * *" --retention 14
 ```
 
 Options:
+
 - `--cron, -c`: Cron schedule (default: "0 2 * * 0" – weekly on Sunday at 2am)
 - `--retention, -r`: Days to keep backups (default: 30)
 
@@ -261,6 +276,7 @@ ghost-backup check
 ```
 
 This validates:
+
 - Git repository status
 - Configuration file existence and validity
 - Global registry inclusion
@@ -305,6 +321,7 @@ ghost-backup config clear-token
 ```
 
 **Creating a GitHub Personal Access Token:**
+
 1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
 2. Click "Generate new token (classic)"
 3. Give it a descriptive name (e.g., "ghost-backup")
@@ -313,6 +330,7 @@ ghost-backup config clear-token
 6. Run `ghost-backup config set-token` and paste the token (username is optional)
 
 **Note:** After setting credentials, restart the service:
+
 ```bash
 ghost-backup service restart
 ```
@@ -386,20 +404,24 @@ ghost-backup service run
 Logs are stored at `~/.local/state/ghost-backup/ghost-backup.log` (following XDG Base Directory specification).
 
 **For systemd services (NixOS module)**:
+
 - View with: `journalctl --user -u ghost-backup -f` (recommended)
 - Or: `tail -f ~/.local/state/ghost-backup/ghost-backup.log`
 
 **For manual installations**:
+
 - View with: `tail -f ~/.local/state/ghost-backup/ghost-backup.log`
 
 ### Viewing Logs in Real-Time
 
 For systemd services (NixOS module):
+
 ```bash
 journalctl --user -u ghost-backup -f
 ```
 
 For manual installations:
+
 ```bash
 tail -f ~/.local/state/ghost-backup/ghost-backup.log
 ```
@@ -418,16 +440,19 @@ tail -f ~/.local/state/ghost-backup/ghost-backup.log
 Ghost Backup uses a flexible user identifier system to organize backups in a way that balances privacy with team visibility.
 
 **Priority order for user identifiers:**
+
 1. **`git_user` from global config** - User-configured identifier (recommended for teams)
 2. **Git username** - From `git config user.name`, sanitized for ref compatibility
 3. **Sanitized email** - Last resort fallback
 
 **Why this matters:**
+
 - **Team leads can identify backups**: No hashed identifiers - clear usernames like "johndoe"
 - **Privacy by default**: Emails are sanitized (e.g., `john_at_example.com`)
 - **User control**: Team members can set their own identifier
 
 **Setting your identifier:**
+
 ```bash
 # Recommended: Set a custom identifier
 ghost-backup config set-token --username johndoe --token ghp_xxxx
@@ -454,6 +479,7 @@ refs/backups/<user_email>/<branch_name>
 ```
 
 Example:
+
 ```
 refs/backups/user_at_example.com/main
 refs/backups/user_at_example.com/feature_new-api
@@ -469,6 +495,7 @@ ghost-backup uninstall
 ```
 
 This will:
+
 - Remove the repository from the global registry
 - Delete `.ghost-backup.json`
 - Restart the service to stop monitoring
@@ -514,15 +541,17 @@ ghost-backup service start
 
 **Cause**: This occurs when using the NixOS module with systemd hardening settings that restrict write access.
 
-**Solution**: 
+**Solution**:
 
 1. Ensure you're using the latest version of the ghost-backup flake/module
 2. Rebuild your NixOS configuration:
+
    ```bash
    sudo nixos-rebuild switch
    ```
 
 3. Restart the user service:
+
    ```bash
    systemctl --user restart ghost-backup
    ```
@@ -537,6 +566,7 @@ chmod 755 ~/.config/ghost-backup
 ### Git Authentication Failures
 
 **Problem**: Service fails to push backups with authentication errors like:
+
 - "fatal: could not read Username"
 - "fatal: could not read Password"
 - "Authentication failed"
@@ -547,17 +577,21 @@ chmod 755 ~/.config/ghost-backup
 
 1. Create a GitHub personal access token (see Configuration section above)
 2. Set the credentials:
+
    ```bash
    ghost-backup config set-token --username myuser --token ghp_xxxx
    # Or interactively:
    ghost-backup config set-token
    ```
+
 3. Restart the service:
+
    ```bash
    ghost-backup service restart
    ```
 
 **Verify credentials are configured:**
+
 ```bash
 ghost-backup config get-token
 ```
@@ -580,7 +614,8 @@ ghost-backup config get-token
 
 **Problem**: No backups are being created for a repository.
 
-**Solution**: 
+**Solution**:
+
 1. Check service status: `ghost-backup service status`
 2. View logs: `tail -f ~/.local/state/ghost-backup/ghost-backup.log`
 3. Verify repository is in registry: `cat ~/.config/ghost-backup/registry.json`
@@ -616,6 +651,7 @@ When `scan_secrets` is enabled, ghost-backup uses gitleaks to scan diffs before 
 ### Backup Storage
 
 Backups are pushed to the configured git remote. Ensure your remote is:
+
 - Secured with proper authentication
 - Using HTTPS or SSH with key-based authentication
 - Hosted on a trusted server
@@ -623,6 +659,7 @@ Backups are pushed to the configured git remote. Ensure your remote is:
 ### Network Considerations
 
 Ghost Backup pushes to git remotes over the network. Ensure:
+
 - Your network connection is secure
 - The remote server is trusted
 - Credentials are properly managed (SSH keys, credential helpers)
@@ -634,12 +671,14 @@ Ghost Backup pushes to git remotes over the network. Ensure:
 The generated GitHub Actions workflow provides automated cleanup of old backups:
 
 **Features:**
+
 - Runs on a schedule (customizable with cron)
 - Deletes backup refs older than retention period
 - Can be manually triggered from the GitHub Actions tab
 - Provides a summary of deletions
 
 **Example schedules:**
+
 - `"0 2 * * 0"` - Weekly on Sunday at 2am (default)
 - `"0 2 * * *"` - Daily at 2am
 - `"0 0 1 * *"` - Monthly on the 1st
@@ -693,12 +732,14 @@ ghost-backup init
 ```
 
 **Key features with worktrees:**
+
 - Each worktree can have its own `.ghost-backup.json` configuration
 - Backups are organized by the worktree's current branch
 - All git operations (stash, diff, remote) work seamlessly
 - Worktrees share the same remote configuration as the main repository
 
 **Example workflow:**
+
 ```bash
 # Main repository on 'main' branch
 cd ~/project
